@@ -7,9 +7,12 @@ import {ProfileProvider} from './src/context/ProfileContext';
 import {AuthProvider} from './src/context/AuthContext';
 import {LanguageProvider} from './src/context/LanguageContext'; // Import LanguageProvider
 
-import SplashScreen from './src/screens/login/Splash';
-import LoginScreen from './src/screens/login/Login';
-import Register from './src/screens/login/Register';
+import SplashScreen from './src/screens/Common/Splash';
+import OnboardingScreen from './src/screens/Common/OnboardingScreen';
+import LoginScreen from './src/screens/Auth/Login';
+
+
+import Register from './src/screens/Auth/RegistrationScreen';
 import UserHomeScreen from './src/screens/user/home/UserHomeScreen';
 import ApplyScreen from './src/screens/user/jobScreen/ApplyScreen';
 import UploadCV from './src/screens/user/jobScreen/UploadCV';
@@ -60,7 +63,9 @@ const App = () => {
               initialRouteName="Splash"
               screenOptions={{headerShown: false}}>
               <Stack.Screen name="Splash" component={SplashScreen} />
+              <Stack.Screen name="Onboarding" component={OnboardingScreen} />
               <Stack.Screen name="Login" component={LoginScreen} />
+
               <Stack.Screen name="Register" component={Register} />
               <Stack.Screen name="UserRegn" component={UserRegn} />
               <Stack.Screen name="UserHomeScreen" component={UserHomeScreen} />
