@@ -1,647 +1,306 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
   View,
+  Text,
+  StyleSheet,
   Image,
-  ImageBackground,
-  Pressable,
-  FlatList,
-  Modal,
-  Alert,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
 } from 'react-native';
-import {recentJobs} from '../../utils/jobs';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import config  from "../../context/config";
-import translations from '../../utils/orghome';
-import { useLanguageContext } from '../../context/LanguageContext';
-import { Root, Popup } from 'popup-ui';
+import { useNavigation } from '@react-navigation/native';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
 
-const OrganizationHomeScreen = ({navigation}: any) => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedSpecialization, setSelectedSpecialization] = useState(null);
-  const { language } = useLanguageContext();
-  const t = (key:any) => translations[language][key] || key;
-  const [userData, setUserData] = useState<{organizationName: string} | null>(
-    null,
-  );
-
-  console.log("response",userData);
-
-  const getAllAsyncStorageData = async () => {
-    try {
-        const keys = await AsyncStorage.getAllKeys();
-        const stores = await AsyncStorage.multiGet(keys);
-
-        stores.forEach(([key, value]) => {
-            console.log(`${key}: ${value}`);
-        });
-        
-        return stores; // Returns an array of key-value pairs
-    } catch (error) {
-        console.error('Error fetching AsyncStorage data:', error);
-    }
+type DrawerParamList = {
+  DashboardTabs: undefined;
+  Profile: undefined;
+  Settings: undefined;
 };
 
-  useEffect(() => {
-    fetchUserData();
-    getAllAsyncStorageData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      // const accessToken = await AsyncStorage.getItem('userToken');
-      const id = await AsyncStorage.getItem('userId');
-      const response = await axios.get(
-        `${config.apiUrl}/organizationDetails/get/${id}`,
-      );
-     // Log the full response to inspect it
-  
-      if (response.status === 200 && response.data) {
-        const data = response.data; // Directly assign the response object to `data`
-        setUserData({
-          organizationName: data.organizationName || '',
-          logoUrl: data.logo
-            ? `${config.apiUrl}/photo/${data.logo}`
-            : '',
-        });
-      } else {
-        console.error('No valid data available');
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      Popup.show({
-        type: 'Danger',
-        title: 'Error',
-        textBody: 'Failed to load user data.',
-        button: true,
-        buttonText: 'Ok',
-        callback: () => Popup.hide(),
-      });
-    }
-  };
-  
-
-  const specializationData = [
-    {image: require('../../assets/icons/Group3.png'), title: 'Design', jobs: 120},
-    {
-      image: require('../../assets/icons/Group2.png'),
-      title: 'Finance',
-      jobs: 250,
-    },
-    {
-      image: require('../../assets/icons/Group4.png'),
-      title: 'Education',
-      jobs: 120,
-    },
-    {
-      image: require('../../assets/icons/Group5.png'),
-      title: 'Restaurant',
-      jobs: 85,
-    },
-    {image: require('../../assets/icons/Group1.png'), title: 'Health', jobs: 235},
-    {
-      image: require('../../assets/icons/Group6.png'),
-      title: 'Programmer',
-      jobs: 412,
-    },
-  ];
-
-  const renderJobCard = ({item}: {item: any}) => (
-    <Pressable style={styles.jobCard}>
-      <Image source={item.logo} style={styles.companyLogo} />
-      <View style={styles.jobInfo}>
-        <Text style={styles.jobTitle}>{item.title}</Text>
-        <Text
-          style={
-            styles.companyLocation
-          }>{`${item.company} - ${item.location}`}</Text>
-        <View style={styles.tags}>
-          {item.tags.map((tag: any, index: any) => (
-            <View key={`tag-${item.id}-${index}`} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      <Pressable style={styles.bookmarkButton}>
-        <Image
-          source={require('../../assets/icons/save.png')}
-          style={styles.icon}
-        />
-      </Pressable>
-    </Pressable>
-  );
-
-  const renderContent = ({item}: {item: any}) => {
-    if (item.key === 'header') {
-      return (
-        <ImageBackground
-          source={require('../../assets/icons/BGG.png')}
-          style={styles.headerBackground}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.greeting}>{t('hello')}</Text>
-              <Text style={styles.name}>{userData?.organizationName}</Text>
-            </View>
-            <View style={styles.rightSection}>
-              <Pressable
-                onPress={() => navigation.navigate('OrganizationProfile')}>
-                <View style={styles.profileImageWrapper}>
-                  <Image
-                    source={{uri: userData?.logoUrl}}
-                    style={styles.profileImage}
-                  />
-                </View>
-              </Pressable>
-            </View>
-          </View>
-          <View style={styles.searchBarContainer}>
-            <View style={styles.searchContainer}>
-              <Image
-                source={require('../../assets/icons/Search.png')}
-                style={styles.searchIcon}
-              />
-              <TextInput
-                placeholder="Search"
-                style={styles.input}
-                placeholderTextColor="#000"
-              />
-            </View>
-            <Pressable style={styles.filterButton}>
-              <Image
-                source={require('../../assets/icons/filter.png')}
-                style={styles.icon}
-              />
-            </Pressable>
-          </View>
-        </ImageBackground>
-      );
-    } else if (item.key === 'specialization') {
-      return (
-        <View style={styles.specializationContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('attr1')}</Text>
-            <Pressable>
-              <Text style={styles.viewAll}>{t('attr2')}</Text>
-            </Pressable>
-          </View>
-          <View style={styles.specializationGrid}>
-            {specializationData.map((item, index: any) => (
-              <Pressable
-                key={`specialization-${index}`}
-                style={[
-                  styles.specializationItem,
-                  selectedSpecialization === index &&
-                    styles.selectedSpecializationItem,
-                ]}
-                onPress={() => setSelectedSpecialization(index)}>
-                <View
-                  style={[
-                    styles.iconContainer,
-                    selectedSpecialization === index &&
-                      styles.selectedIconContainer,
-                  ]}>
-                  <Image
-                    source={item.image}
-                    style={styles.specializationIcon}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.specializationTitle,
-                    selectedSpecialization === index &&
-                      styles.selectedSpecializationTitle,
-                  ]}>
-                  {item.title}
-                </Text>
-                <Text
-                  style={[
-                    styles.jobCount,
-                    selectedSpecialization === index && styles.selectedJobCount,
-                  ]}>
-                  {item.jobs} Jobs
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      );
-    } else if (item.key === 'jobRecommendation') {
-      return (
-        <View style={styles.jobRecommendationContainer}>
-          <Text style={styles.sectionTitle}>{t('attr3')}</Text>
-          {recentJobs.map(job => (
-            <React.Fragment key={`job-${job.id}`}>
-              {renderJobCard({item: job})}
-            </React.Fragment>
-          ))}
-        </View>
-      );
-    }
-    return null;
-  };
+const OrganizationHomeScreen = () => {
+  const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
 
   return (
-    <Root>
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={[
-          {key: 'header'},
-          {key: 'specialization'},
-          {key: 'jobRecommendation'},
-        ]}
-        renderItem={renderContent}
-        keyExtractor={item => item.key}
-        showsVerticalScrollIndicator={false}
-        style={styles.scrollContent}
-      />
-      <View style={styles.bottomNav}>
-        <Pressable>
+      {/* Header */}
+      <View style={styles.topHeader}>
+        <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
           <Image
-            source={require('../../assets/icons/home.png')}
-            style={styles.navIcon}
+            source={require('../../assets/icons/menu.png')}
+            style={styles.menuIcon}
           />
-        </Pressable>
-        <Pressable>
-          <Image
-            source={require('../../assets/icons/connect.png')}
-            style={styles.navIcon}
-          />
-        </Pressable>
-        <View style={styles.addButtonContainer}>
-          <Pressable
-            style={styles.addButton}
-            onPress={() => setIsModalVisible(true)}>
-            <Image
-              source={require('../../assets/icons/plus.png')}
-              style={styles.plusIcon}
-            />
-          </Pressable>
-        </View>
-        <Pressable >
-        {/* onPress={() => navigation.navigate('orgNotifications')} */}
-          <Image
-            source={require('../../assets/icons/chart.png')}
-            style={styles.navIcon}
-          />
-        </Pressable>
-        <Pressable>
-          <Image
-            source={require('../../assets/icons/save.png')}
-            style={styles.navIcon}
-          />
-        </Pressable>
+        </TouchableOpacity>
+        <Text style={styles.screenTitle}>Organization Dashboard</Text>
       </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={() => setIsModalVisible(false)}>
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setIsModalVisible(false)}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>What would you like to add?</Text>
-            <Text style={styles.modalDescription}>
-              Would you like to post your tips and experiences or create a job?
-            </Text>
-            <Pressable
-              style={styles.postButton}
-              onPress={() => {
-                setIsModalVisible(false);
-                // Add your POST action here
-              }}>
-              <Text style={styles.postButtonText}>POST</Text>
-            </Pressable>
-            <Pressable
-              style={styles.makeJobButton}
-              onPress={() => {
-                setIsModalVisible(false);
-                navigation.navigate('JobPost');
-              }}>
-              <Text style={styles.makeJobButtonText}>MAKE A JOB</Text>
-            </Pressable>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Alert Banner */}
+        <View style={styles.alertBanner}>
+          <Image source={require('../../assets/icons/alert.png')} style={styles.alertIcon} />
+          <Text style={styles.alertText}>Scheduled Maintenance on 22nd June from 1 AM - 3 AM</Text>
+        </View>
+
+        {/* Achievement Banner */}
+        <View style={styles.banner}>
+          <Image source={require('../../assets/icons/award.png')} style={styles.bannerIcon} />
+          <View>
+            <Text style={styles.bannerTitle}>Awesome Progress!</Text>
+            <Text style={styles.bannerSubtitle}>500+ Candidates Reached</Text>
           </View>
-        </Pressable>
-      </Modal>
+        </View>
+
+        {/* Stats Grid */}
+        <View style={styles.statsGrid}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>12</Text>
+            <Text style={styles.statLabel}>Active Jobs</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>230</Text>
+            <Text style={styles.statLabel}>Total Applications</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>35</Text>
+            <Text style={styles.statLabel}>Top Candidates</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>18</Text>
+            <Text style={styles.statLabel}>New Messages</Text>
+          </View>
+        </View>
+
+        {/* Blue Design Cards */}
+        <View style={styles.cardRow}>
+          <View style={styles.blueCard}>
+            <Image source={require('../../assets/icons/stats.png')} style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>Job Analytics</Text>
+            <Text style={styles.cardSubtitle}>View reach and performance</Text>
+          </View>
+          <View style={styles.blueCard}>
+            <Image source={require('../../assets/icons/Profile.png')} style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>Candidate Insights</Text>
+            <Text style={styles.cardSubtitle}>Profiles and engagement</Text>
+          </View>
+        </View>
+        <View style={styles.cardRow}>
+          <View style={styles.blueCard}>
+            <Image source={require('../../assets/icons/building.png')} style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>Company Stats</Text>
+            <Text style={styles.cardSubtitle}>Growth & posting metrics</Text>
+          </View>
+          <View style={styles.blueCard}>
+            <Image source={require('../../assets/icons/feedback.png')} style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>Feedback</Text>
+            <Text style={styles.cardSubtitle}>Candidate experience</Text>
+          </View>
+        </View>
+
+        {/* Activity Sections */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Activities</Text>
+          <View style={styles.activityCard}>
+            <Text style={styles.activityText}>📥 You received 8 new applications for “Frontend Developer”.</Text>
+          </View>
+          <View style={styles.activityCard}>
+            <Text style={styles.activityText}>💬 2 new messages from candidates today.</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Upcoming Interviews</Text>
+          <View style={styles.activityCard}>
+            <Text style={styles.activityText}>📅 Mon, 17th June – 10:00 AM with Ankit Verma (UI/UX Designer)</Text>
+          </View>
+          <View style={styles.activityCard}>
+            <Text style={styles.activityText}>📅 Tue, 18th June – 3:00 PM with Shreya Das (React Developer)</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Announcements</Text>
+          <View style={styles.activityCard}>
+            <Text style={styles.activityText}>📢 New referral bonus policy will be live from July 1st!</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Hiring Performance (Weekly)</Text>
+          <View style={styles.chartPlaceholder}>
+            <Text style={{ color: '#999' }}>📊 Chart Coming Soon...</Text>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
-    </Root>
   );
 };
+
+export default OrganizationHomeScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#E6F0FA',
   },
-  headerBackground: {
-    paddingBottom: 30,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    overflow: 'hidden',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  greeting: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  name: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  rightSection: {
+  topHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15,
-  },
-  notificationButton: {
-    padding: 8,
-  },
-  profileImageWrapper: {
-    width: 50, // Outer circle size
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#fff', // Circle background color
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000', // Use a darker shadow color for better visibility
-    shadowOffset: {width: 0, height: 2}, // Shadow offset
-    shadowOpacity: 0.25, // Slightly transparent shadow
-    shadowRadius: 4, // Less blur radius for a subtle shadow
-    elevation: 5, // Lower elevation for Android shadow
-  },
-
-  profileImage: {
-    width: 40, // Inner image size
-    height: 40,
-    borderRadius: 20,
-  },
-  searchBarContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 10,
-    marginTop: 20,
-  },
-  searchContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
     paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    elevation: 2,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#ccc',
   },
-  searchIcon: {
+  menuIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 15,
+  },
+  screenTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  content: {
+    padding: 20,
+  },
+  alertBanner: {
+    backgroundColor: '#D1ECF1',
+    padding: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  alertIcon: {
     width: 20,
     height: 20,
     marginRight: 10,
   },
-  input: {
+  alertText: {
+    color: '#0C5460',
+    fontSize: 13,
     flex: 1,
-    height: 45,
-    fontSize: 16,
-  },
-  filterButton: {
-    backgroundColor: '#FF6B2C',
-    width: 45,
-    height: 45,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContent: {
-    flex: 1,
-  },
-  specializationContainer: {
-    padding: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-  },
-  viewAll: {
-    color: '#666',
-  },
-  specializationGrid: {
-    flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 15,
   },
-  specializationItem: {
-    width: '30%',
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  selectedSpecializationItem: {
-    backgroundColor: '#FFF0E6',
-  },
-  iconContainer: {
-    width: 45,
-    height: 45,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    backgroundColor: '#FF6B2C',
-  },
-  selectedIconContainer: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-  },
-  specializationIcon: {
-    width: 24,
-    height: 24,
-  },
-  specializationTitle: {
-    fontSize: 10,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  selectedSpecializationTitle: {
-    color: '#FF6B2C',
-  },
-  jobCount: {
-    fontSize: 12,
-    color: '#666',
-  },
-  selectedJobCount: {
-    color: '#FF6B2C',
-  },
-  jobRecommendationContainer: {
-    padding: 20,
-  },
-  jobCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 15,
+  banner: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginTop: 10,
+    backgroundColor: '#E3F2FD',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    alignItems: 'center',
   },
-  companyLogo: {
+  bannerIcon: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    marginRight: 12,
+    marginRight: 15,
   },
-  jobInfo: {
-    flex: 1,
-  },
-  jobTitle: {
+  bannerTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontWeight: '600',
+    color: '#2C3E50',
   },
-  companyLocation: {
+  bannerSubtitle: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
+    color: '#555',
   },
-  tags: {
+  statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    justifyContent: 'space-between',
   },
-  tag: {
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  tagText: {
-    fontSize: 12,
-    color: '#666',
-  },
-  bookmarkButton: {
-    padding: 8,
-  },
-  bottomNavigation: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+  statCard: {
+    width: '47%',
     backgroundColor: '#fff',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#F5F5F5',
-  },
-  navTab: {
-    padding: 10,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-  },
-  addIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#fff',
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 15,
     alignItems: 'center',
-    paddingVertical: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#007BFF',
+  },
+  statLabel: {
+    fontSize: 13,
+    color: '#555',
+    marginTop: 5,
+  },
+  section: {
+    marginBottom: 25,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2C3E50',
+    marginBottom: 8,
+  },
+  sectionText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
+  },
+  activityCard: {
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#EEEEEE',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowOffset: { width: 0, height: 1 },
   },
-  navIcon: {
-    width: 24,
-    height: 24,
+  activityText: {
+    fontSize: 13,
+    color: '#333',
   },
-  addButtonContainer: {
-    marginTop: -30,
-  },
-  addButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#1A1150',
+  chartPlaceholder: {
+    height: 150,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FAFAFA',
   },
-  plusIcon: {
-    width: 24,
-    height: 24,
-    tintColor: '#FFFFFF',
+  cardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
+  blueCard: {
+    backgroundColor: '#F0F8FF',
+    borderRadius: 10,
+    width: '47%',
+    padding: 15,
     alignItems: 'center',
+    shadowColor: '#007BFF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    elevation: 2,
   },
-  modalHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 2,
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#000',
-  },
-  modalDescription: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  postButton: {
-    backgroundColor: '#4B0082',
-    width: '100%',
-    padding: 15,
-    borderRadius: 8,
+  cardIcon: {
+    width: 35,
+    height: 35,
     marginBottom: 10,
   },
-  postButtonText: {
-    color: 'white',
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#003366',
+    marginBottom: 4,
     textAlign: 'center',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
-  makeJobButton: {
-    backgroundColor: '#E6E6FA',
-    width: '100%',
-    padding: 15,
-    borderRadius: 8,
-  },
-  makeJobButtonText: {
-    color: '#4B0082',
+  cardSubtitle: {
+    fontSize: 12,
+    color: '#555',
     textAlign: 'center',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
-
-export default OrganizationHomeScreen;

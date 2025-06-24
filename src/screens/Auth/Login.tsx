@@ -54,7 +54,7 @@ export default function LoginScreen({ navigation }: any) {
           {
             text: 'Ok',
             onPress: () => {
-              navigation.replace(isJobSeeker ? 'TabNavigator' : 'OrganizationTabs');
+              navigation.replace(isJobSeeker ? 'TabNavigator' : 'OrganizationHome');
             },
           },
         ]);
