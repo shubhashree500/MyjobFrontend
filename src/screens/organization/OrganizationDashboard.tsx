@@ -77,7 +77,7 @@ const OrganizationHomeScreen = () => {
             <Text style={styles.cardSubtitle}>View reach and performance</Text>
           </View>
           <View style={styles.blueCard}>
-            <Image source={require('../../assets/icons/Profile.png')} style={styles.cardIcon} />
+            <Image source={require('../../assets/icons/user.png')} style={styles.cardIcon} />
             <Text style={styles.cardTitle}>Candidate Insights</Text>
             <Text style={styles.cardSubtitle}>Profiles and engagement</Text>
           </View>

@@ -54,7 +54,7 @@ export default function LoginScreen({ navigation }: any) {
           {
             text: 'Ok',
             onPress: () => {
-              navigation.replace(isJobSeeker ? 'TabNavigator' : 'OrganizationHome');
+              navigation.replace(isJobSeeker ? 'UserDashboard' : 'OrganizationDashboard');
             },
           },
         ]);
@@ -210,7 +210,7 @@ export default function LoginScreen({ navigation }: any) {
         </View>
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>{t('registerPrompt')} </Text>
-          <Pressable onPress={() => navigation.navigate('Register')}>
+          <Pressable onPress={() => navigation.navigate('RegistrationScreen')}>
             <Text style={styles.registerLink}>{t('registerLink')}</Text>
           </Pressable>
         </View>

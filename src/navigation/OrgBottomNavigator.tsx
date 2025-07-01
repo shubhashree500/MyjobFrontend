@@ -1,12 +1,13 @@
-// OrgBottomNavigator.tsx
+// src/navigation/OrgBottomNavigator.tsx
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image, StyleSheet } from 'react-native';
-import OrganizationHomeScreen from '../screens/organization/OrganizationHomeScreen';
-import ManageJobsScreen from '../screens/organization/ManageJobsScreen';
-import ApplicationsScreen from '../screens/organization/ApplicationsScreen';
-import PostScreen from '../screens/organization/PostScreen';
-import MessagesScreen from '../screens/organization/MessagesScreen';
+
+import OrganizationHomeScreen from '../screens/Organization/OrganizationDashboard';
+import ManageJobsScreen from '../screens/Organization/ManageJobsScreen';
+import ApplicationsScreen from '../screens/Organization/ApplicationsScreen';
+import PostScreen from '../screens/Organization/PostScreen';
+import MessagesScreen from '../screens/Organization/MessagesScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -33,7 +34,7 @@ const OrgBottomNavigator = () => {
             case 'ManageJobs':
               iconSource = require('../assets/icons/manage.png');
               break;
-               case 'Post':
+            case 'Post':
               iconSource = require('../assets/icons/apply.png');
               break;
             case 'Applications':
@@ -49,41 +50,18 @@ const OrgBottomNavigator = () => {
           return (
             <Image
               source={iconSource}
-              style={[
-                styles.icon,
-                { tintColor: focused ? '#4B0082' : '#999' },
-              ]}
+              style={[styles.icon, { tintColor: focused ? '#4B0082' : '#999' }]}
               resizeMode="contain"
             />
           );
         },
       })}
     >
-      <Tab.Screen
-        name="Dashboard"
-        component={OrganizationHomeScreen}
-        options={{ tabBarLabel: 'Dashboard' }}
-      />
-      <Tab.Screen
-        name="ManageJobs"
-        component={ManageJobsScreen}
-        options={{ tabBarLabel: 'Manage' }}
-      />
-       <Tab.Screen
-        name="Post"
-        component={PostScreen}
-        options={{ tabBarLabel: 'Post' }}
-      />
-      <Tab.Screen
-        name="Applications"
-        component={ApplicationsScreen}
-        options={{ tabBarLabel: 'Applications' }}
-      />
-      <Tab.Screen
-        name="Messages"
-        component={MessagesScreen}
-        options={{ tabBarLabel: 'Messages' }}
-      />
+      <Tab.Screen name="Dashboard" component={OrganizationHomeScreen} />
+      <Tab.Screen name="ManageJobs" component={ManageJobsScreen} />
+      <Tab.Screen name="Post" component={PostScreen} />
+      <Tab.Screen name="Applications" component={ApplicationsScreen} />
+      <Tab.Screen name="Messages" component={MessagesScreen} />
     </Tab.Navigator>
   );
 };

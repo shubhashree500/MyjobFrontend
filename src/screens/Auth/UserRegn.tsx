@@ -1,22 +1,21 @@
 import axios from 'axios';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   Pressable,
   StyleSheet,
-  Alert,
   Image,
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import config from '../../context/config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Root, Popup} from 'popup-ui';
+import { Root, Popup } from 'popup-ui';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
-const UserRegn = ({navigation}: any) => {
+const UserRegn = ({ navigation }: any) => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +31,7 @@ const UserRegn = ({navigation}: any) => {
   const [bio, setBio] = useState('');
   const [primaryJobPreference, setPrimaryJobPreference] = useState('');
   const [logo, setLogo] = useState<string | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const pickImage = () => {
     const options = {
@@ -52,12 +52,29 @@ const UserRegn = ({navigation}: any) => {
     });
   };
 
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      const formatted = selectedDate.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+      setDob(formatted);
+    }
+  };
+
   const submitData = async () => {
     try {
-      // Create a FormData object
-      const formData = new FormData();
+      if (!dob || dob.trim() === '') {
+        Popup.show({
+          type: 'Danger',
+          title: 'Validation Error',
+          textBody: 'Date of Birth is required.',
+          button: true,
+          buttonText: 'Ok',
+          callback: () => Popup.hide(),
+        });
+        return;
+      }
 
-      // Append all form fields to FormData
+      const formData = new FormData();
       formData.append('email', email);
       formData.append('password', password);
       formData.append('firstName', firstName);
@@ -65,38 +82,32 @@ const UserRegn = ({navigation}: any) => {
       formData.append('lastName', lastName);
       formData.append('phone', phone);
       formData.append('gender', gender);
-      formData.append('dob', dob);
+      formData.append('dob', dob); // already formatted as YYYY-MM-DD
       formData.append('maritalStatus', maritalStatus);
-      formData.append('coverImage', logo);
       formData.append('permanentAddress', permanentAddress);
       formData.append('pin', pin);
       formData.append('primaryJobPreference', primaryJobPreference);
       formData.append('bio', bio);
 
-      // Append the logo file if it exists
       if (logo) {
-        const logoData = {
+        formData.append('logo', {
           uri: logo,
-          type: 'image/jpeg', // Adjust the type based on your image format
-          name: 'logo.jpg', // Provide a name for the file
-        };
-        formData.append('logo', logoData);
+          type: 'image/jpeg',
+          name: 'logo.jpg',
+        } as any);
       }
 
-      // Send the POST request with FormData
       const response = await axios.post(
         `${config.apiUrl}/personalDetails/create`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data', // Set the correct content type
+            'Content-Type': 'multipart/form-data',
           },
-        },
+        }
       );
 
-      // Handle the response
       if (response.status === 201) {
-        // Alert.alert('Success', 'Your details have been submitted successfully!');
         Popup.show({
           type: 'Success',
           title: 'Successful',
@@ -108,24 +119,18 @@ const UserRegn = ({navigation}: any) => {
             navigation.replace('Login');
           },
         });
-        // navigation.navigate('Login');
       } else {
         throw new Error('Failed to submit data.');
       }
     } catch (error: any) {
       console.error(
         'Error submitting data:',
-        error.response ? error.response.data : error.message,
+        error.response ? error.response.data : error.message
       );
-      // Alert.alert(
-      //   'Error',
-      //   'An error occurred while submitting your details. Please try again.',
-      // );
       Popup.show({
         type: 'Danger',
         title: 'Error',
-        textBody:
-          'An error occurred while submitting your details. Please try again.',
+        textBody: 'An error occurred while submitting your details. Please try again.',
         button: true,
         buttonText: 'Retry',
         callback: () => Popup.hide(),
@@ -137,7 +142,7 @@ const UserRegn = ({navigation}: any) => {
     if (step < 2) {
       setStep(step + 1);
     } else {
-      submitData(); // Call the submit function
+      submitData();
     }
   };
 
@@ -193,7 +198,6 @@ const UserRegn = ({navigation}: any) => {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={true}
-                selectionColor="#000"
               />
             </View>
             <View style={styles.inputContainer}>
@@ -207,58 +211,46 @@ const UserRegn = ({navigation}: any) => {
               />
             </View>
             <View style={styles.genderContainer}>
-              <Pressable
-                style={[
-                  styles.genderButton,
-                  gender === 'Male' && styles.genderButtonSelected,
-                ]}
-                onPress={() => setGender('Male')}>
-                <Text style={styles.genderText}>Male</Text>
-              </Pressable>
-
-              <Pressable
-                style={[
-                  styles.genderButton,
-                  gender === 'Female' && styles.genderButtonSelected,
-                ]}
-                onPress={() => setGender('Female')}>
-                <Text style={styles.genderText}>Female</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.genderButton,
-                  gender === 'Others' && styles.genderButtonSelected,
-                ]}
-                onPress={() => setGender('Others')}>
-                <Text style={styles.genderText}>Others</Text>
-              </Pressable>
+              {['Male', 'Female', 'Others'].map(option => (
+                <Pressable
+                  key={option}
+                  style={[
+                    styles.genderButton,
+                    gender === option && styles.genderButtonSelected,
+                  ]}
+                  onPress={() => setGender(option)}>
+                  <Text style={styles.genderText}>{option}</Text>
+                </Pressable>
+              ))}
             </View>
             <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Date of Birth"
-                placeholderTextColor="#aaa"
-                value={dob}
-                onChangeText={setDob}
-              />
+              <Pressable style={styles.input} onPress={() => setShowDatePicker(true)}>
+                <Text style={{ color: dob ? '#000' : '#aaa', fontSize: 16 }}>
+                  {dob || 'Select Date of Birth'}
+                </Text>
+              </Pressable>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={dob ? new Date(dob) : new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                  maximumDate={new Date()}
+                />
+              )}
             </View>
             <View style={styles.maritalContainer}>
-              <Pressable
-                style={[
-                  styles.maritalOption,
-                  maritalStatus === 'Married' && styles.maritalOptionSelected,
-                ]}
-                onPress={() => setMaritalStatus('Married')}>
-                <Text style={styles.maritalText}>Married</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.maritalOption,
-                  maritalStatus === 'Unmarried' && styles.maritalOptionSelected,
-                ]}
-                onPress={() => setMaritalStatus('Unmarried')}>
-                <Text style={styles.maritalText}>Unmarried</Text>
-              </Pressable>
+              {['Married', 'Unmarried'].map(option => (
+                <Pressable
+                  key={option}
+                  style={[
+                    styles.maritalOption,
+                    maritalStatus === option && styles.maritalOptionSelected,
+                  ]}
+                  onPress={() => setMaritalStatus(option)}>
+                  <Text style={styles.maritalText}>{option}</Text>
+                </Pressable>
+              ))}
             </View>
           </>
         );
@@ -268,7 +260,7 @@ const UserRegn = ({navigation}: any) => {
             <View style={styles.imageContainer}>
               <Pressable style={styles.imagePicker} onPress={pickImage}>
                 {logo ? (
-                  <Image source={{uri: logo}} style={styles.coverImage} />
+                  <Image source={{ uri: logo }} style={styles.coverImage} />
                 ) : (
                   <Text style={styles.imagePickerText}>Select Cover Image</Text>
                 )}
@@ -323,24 +315,14 @@ const UserRegn = ({navigation}: any) => {
     <Root>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          {/* Step Progress */}
           <View style={styles.progressContainer}>
-            <View
-              style={[styles.progressBar, {width: `${(step / 2) * 100}%`}]}
-            />
+            <View style={[styles.progressBar, { width: `${(step / 2) * 100}%` }]} />
           </View>
           <Text style={styles.stepText}>STEP {step}/2</Text>
-
-          {/* Title */}
           <Text style={styles.title}>Tell us Your Details</Text>
-
           {renderInputs()}
-
-          {/* Next Button */}
           <Pressable style={styles.button} onPress={handleNext}>
-            <Text style={styles.buttonText}>
-              {step === 2 ? 'Submit' : 'Next'}
-            </Text>
+            <Text style={styles.buttonText}>{step === 2 ? 'Submit' : 'Next'}</Text>
           </Pressable>
         </View>
       </TouchableWithoutFeedback>
@@ -349,138 +331,44 @@ const UserRegn = ({navigation}: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-  },
-  progressContainer: {
-    height: 4,
-    width: '100%',
-    backgroundColor: '#e0e0e0',
-    marginBottom: 8,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: '#007BFF',
-  },
-  stepText: {
-    fontSize: 14,
-    color: '#555',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  inputContainer: {
-    marginBottom: 12,
-  },
+  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
+  progressContainer: { height: 4, width: '100%', backgroundColor: '#e0e0e0', marginBottom: 8 },
+  progressBar: { height: 4, backgroundColor: '#007BFF' },
+  stepText: { fontSize: 14, color: '#555', textAlign: 'center', marginBottom: 16 },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 16 },
+  inputContainer: { marginBottom: 12 },
   input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
-    fontSize: 16,
-    color: '#000',
+    height: 50, borderColor: '#ccc', borderWidth: 1, borderRadius: 8,
+    paddingHorizontal: 16, backgroundColor: '#fff', fontSize: 16, justifyContent: 'center',
   },
-  genderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
+  genderContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   genderButton: {
-    flex: 1,
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 4,
-    backgroundColor: '#fff',
+    flex: 1, height: 50, borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+    justifyContent: 'center', alignItems: 'center', marginHorizontal: 4, backgroundColor: '#fff',
   },
-  genderButtonSelected: {
-    backgroundColor: '#007BFF',
-    color: '000',
-  },
-  genderText: {
-    fontSize: 16,
-    color: '#555',
-  },
-  maritalContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginBottom: 16,
-  },
+  genderButtonSelected: { backgroundColor: '#007BFF' },
+  genderText: { fontSize: 16, color: '#555' },
+  maritalContainer: { flexDirection: 'row', justifyContent: 'space-evenly', marginBottom: 16 },
   maritalOption: {
-    flex: 1,
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 4,
-    backgroundColor: '#fff',
+    flex: 1, height: 50, borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+    justifyContent: 'center', alignItems: 'center', marginHorizontal: 4, backgroundColor: '#fff',
   },
-  maritalOptionSelected: {
-    backgroundColor: '#007BFF',
-  },
-  maritalText: {
-    fontSize: 16,
-    color: '#555',
-  },
+  maritalOptionSelected: { backgroundColor: '#007BFF' },
+  maritalText: { fontSize: 16, color: '#555' },
   button: {
-    height: 50,
-    backgroundColor: '#007BFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-    marginTop: 16,
+    height: 50, backgroundColor: '#007BFF', justifyContent: 'center',
+    alignItems: 'center', borderRadius: 8, marginTop: 16,
   },
-  buttonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  imageContainer: {
-    marginBottom: 12,
-    alignItems: 'center',
-  },
+  buttonText: { fontSize: 18, color: '#fff', fontWeight: 'bold' },
+  imageContainer: { marginBottom: 12, alignItems: 'center' },
   imagePicker: {
-    height: 200,
-    width: 200, // Ensures the picker is circular
-    borderColor: '#ddd', // Softer border color
-    borderWidth: 2,
-    borderRadius: 100, // Makes it circular
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fefefe', // Clean white background
-    shadowColor: '#000', // Adds depth with shadow
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3, // Shadow for Android
-    marginBottom: 12, // Space below the picker
+    height: 200, width: 200, borderColor: '#ddd', borderWidth: 2, borderRadius: 100,
+    justifyContent: 'center', alignItems: 'center', backgroundColor: '#fefefe',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1, shadowRadius: 6, elevation: 3, marginBottom: 12,
   },
-  coverImage: {
-    height: 200,
-    width: 200, // Matches the picker dimensions
-    borderRadius: 100, // Ensures the image is circular
-    resizeMode: 'cover', // Ensures the image fills the space
-  },
-  imagePickerText: {
-    fontSize: 16,
-    color: '#777',
-    textAlign: 'center',
-  },
+  coverImage: { height: 200, width: 200, borderRadius: 100, resizeMode: 'cover' },
+  imagePickerText: { fontSize: 16, color: '#777', textAlign: 'center' },
 });
 
 export default UserRegn;

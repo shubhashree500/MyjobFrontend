@@ -1,21 +1,21 @@
 // src/navigation/OrgDrawerNavigator.tsx
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import OrgBottomNavigator from '../navigation/OrgBottomNavigator';
-import OrganizationProfile from '../screens/organization/OrganizationProfile';
-import SettingsScreen from '../screens/common/SettingsScreen';
-import ProfileScreen from '../screens/common/ProfileScreen';
-import UserHomeScreen from '../screens/user/home/UserHomeScreen';
+
+import OrgBottomNavigator from './OrgBottomNavigator';
+import OrganizationProfile from '../screens/Common/ProfileScreen';
+import SettingsScreen from '../screens/Common/SettingScreen';
+import UserHomeScreen from '../screens/JobSeeker/UserDashboardScreen';
 
 const Drawer = createDrawerNavigator();
 
 const OrgDrawerNavigator = () => (
   <Drawer.Navigator
-    initialRouteName="DashboardTabs"
+    initialRouteName="OrgDashboardTabs"
     screenOptions={{ headerShown: false }}
   >
     <Drawer.Screen
-      name="DashboardTabs"
+      name="OrgDashboardTabs"
       component={OrgBottomNavigator}
       options={{ title: 'Org Dashboard' }}
     />
@@ -24,8 +24,16 @@ const OrgDrawerNavigator = () => (
       component={UserHomeScreen}
       options={{ title: 'User Dashboard' }}
     />
-    <Drawer.Screen name="Profile" component={OrganizationProfile} />
-    <Drawer.Screen name="Settings" component={SettingsScreen} />
+    <Drawer.Screen
+      name="Profile"
+      component={OrganizationProfile}
+      options={{ title: 'Organization Profile' }}
+    />
+    <Drawer.Screen
+      name="Settings"
+      component={SettingsScreen}
+      options={{ title: 'Settings' }}
+    />
   </Drawer.Navigator>
 );
 
