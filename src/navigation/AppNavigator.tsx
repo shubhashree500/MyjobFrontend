@@ -12,7 +12,18 @@ import OrganizationRegn from '../screens/Auth/OrganizationRegn';
 import OrgBottomNavigator from './OrgBottomNavigator';
 import OrgDrawerNavigator from './OrgDrawerNavigator';
 import UserDashboardScreen from '../screens/JobSeeker/UserDashboardScreen';
-import OrganizationDashboard from '../screens/Organization/OrganizationDashboard';
+import PostInternshipScreen from '../screens/Organization/Post/PostInternshipScreen';
+import PostCampusScreen from '../screens/Organization/Post/PostCampusScreen';
+import PostJobScreen from '../screens/Organization/Post/PostJobScreen';
+import ActiveJobsScreen from '../screens/Organization/Dashboard/ActiveJobsScreen';
+import TotalApplicants from '../screens/Organization/Dashboard/TotalApplicants';
+import TopCandidatesScreen from '../screens/Organization/Dashboard/TopCandidatesScreen';
+import JobAnalyticsScreen from '../screens/Organization/Dashboard/AnalyticsInsightsScreen';
+// import CandidateInsightsScreen from '../screens/Organization/Dashboard/CandidateInsightsScreen';
+import InterviewScheduleScreen from '../screens/Organization/Dashboard/InterviewScheduleScreen';
+import CompanyStatsScreen from '../screens/Organization/Dashboard/CompanyStatsScreen';
+import FeedbackScreen from '../screens/Organization/Dashboard/FeedbackScreen';
+
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -28,7 +39,17 @@ const AppNavigator = () => {
         <Stack.Screen name="OrganizationDashboard" component={OrgBottomNavigator} />
         <Stack.Screen name="OrganizationDrawer" component={OrgDrawerNavigator} />
         <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
-       {/* <Stack.Screen name="OrganizationDashboard" component={OrganizationDashboard} /> */}
+        <Stack.Screen name="PostJob" component={PostJobScreen} options={{ title: 'Post a Job' }} />
+        <Stack.Screen name="PostCampus" component={PostCampusScreen} options={{ title: 'Post a Campus Drive' }} />
+        <Stack.Screen name="PostInternship" component={PostInternshipScreen} options={{ title: 'Post an Internship' }} />
+<Stack.Screen name="ActiveJobs" component={ActiveJobsScreen} />
+      <Stack.Screen name="TotalApplicants" component={TotalApplicants} />
+      <Stack.Screen name="TopCandidates" component={TopCandidatesScreen} />
+      <Stack.Screen name="JobAnalytics" component={JobAnalyticsScreen} />
+      <Stack.Screen name="InterviewSchedule" component={InterviewScheduleScreen} />
+      {/* <Stack.Screen name="CandidateInsights" component={CandidateInsightsScreen} /> */}
+      <Stack.Screen name="CompanyStats" component={CompanyStatsScreen} />
+      <Stack.Screen name="Feedback" component={FeedbackScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

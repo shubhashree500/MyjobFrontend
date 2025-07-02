@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,19 +6,34 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
   SafeAreaView,
 } from 'react-native';
+import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
-
-type DrawerParamList = {
-  DashboardTabs: undefined;
-  Profile: undefined;
-  Settings: undefined;
-};
+import apiConfig from '../../../context/config';
 
 const OrganizationHomeScreen = () => {
-  const navigation = useNavigation<DrawerNavigationProp<DrawerParamList>>();
+  const navigation = useNavigation<any>(); 
+ const [jobCount, setJobCount] = useState<number>(0);
+  const [loadingJobs, setLoadingJobs] = useState<boolean>(true);
+ 
+  useEffect(() => {
+    const fetchJobCount = async () => {
+      try {
+        const res = await axios.get(`${apiConfig.apiUrl}/postedjob/getAll`);
+        if (Array.isArray(res.data?.data)) {
+          setJobCount(res.data.data.length);
+        }
+      } catch (error) {
+        console.error('Failed to fetch job count:', error);
+      } finally {
+        setLoadingJobs(false);
+      }
+    };
+
+    fetchJobCount();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,7 +41,7 @@ const OrganizationHomeScreen = () => {
       <View style={styles.topHeader}>
         <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
           <Image
-            source={require('../../assets/icons/menu.png')}
+            source={require('../../../assets/icons/menu.png')}
             style={styles.menuIcon}
           />
         </TouchableOpacity>
@@ -36,13 +51,13 @@ const OrganizationHomeScreen = () => {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Alert Banner */}
         <View style={styles.alertBanner}>
-          <Image source={require('../../assets/icons/alert.png')} style={styles.alertIcon} />
+          <Image source={require('../../../assets/icons/alert.png')} style={styles.alertIcon} />
           <Text style={styles.alertText}>Scheduled Maintenance on 22nd June from 1 AM - 3 AM</Text>
         </View>
 
         {/* Achievement Banner */}
         <View style={styles.banner}>
-          <Image source={require('../../assets/icons/award.png')} style={styles.bannerIcon} />
+          <Image source={require('../../../assets/icons/award.png')} style={styles.bannerIcon} />
           <View>
             <Text style={styles.bannerTitle}>Awesome Progress!</Text>
             <Text style={styles.bannerSubtitle}>500+ Candidates Reached</Text>
@@ -51,48 +66,53 @@ const OrganizationHomeScreen = () => {
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Active Jobs</Text>
-          </View>
-          <View style={styles.statCard}>
+          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('ActiveJobs')}>
+            {loadingJobs ? (
+                          <ActivityIndicator size="small" color="#007BFF" />
+                        ) : (
+                          <Text style={styles.statValue}>{jobCount}</Text>
+                        )}
+                        <Text style={styles.statLabel}>Active Jobs</Text>
+                      </TouchableOpacity>
+          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('TotalApplicants')}>
             <Text style={styles.statValue}>230</Text>
             <Text style={styles.statLabel}>Total Applications</Text>
-          </View>
-          <View style={styles.statCard}>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('TopCandidates')}>
             <Text style={styles.statValue}>35</Text>
             <Text style={styles.statLabel}>Top Candidates</Text>
-          </View>
-          <View style={styles.statCard}>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('Feedback')}>
             <Text style={styles.statValue}>18</Text>
             <Text style={styles.statLabel}>New Messages</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Blue Design Cards */}
         <View style={styles.cardRow}>
-          <View style={styles.blueCard}>
-            <Image source={require('../../assets/icons/stats.png')} style={styles.cardIcon} />
+          <TouchableOpacity style={styles.blueCard} onPress={() => navigation.navigate('JobAnalytics')}>
+            <Image source={require('../../../assets/icons/stats.png')} style={styles.cardIcon} />
             <Text style={styles.cardTitle}>Job Analytics</Text>
             <Text style={styles.cardSubtitle}>View reach and performance</Text>
-          </View>
-          <View style={styles.blueCard}>
-            <Image source={require('../../assets/icons/user.png')} style={styles.cardIcon} />
-            <Text style={styles.cardTitle}>Candidate Insights</Text>
-            <Text style={styles.cardSubtitle}>Profiles and engagement</Text>
-          </View>
+          </TouchableOpacity>
+<TouchableOpacity style={styles.blueCard} onPress={() => navigation.navigate('InterviewSchedule')}>
+  <Image source={require('../../../assets/icons/calander.png')} style={styles.cardIcon} />
+  <Text style={styles.cardTitle}>Interview Schedule</Text>
+  <Text style={styles.cardSubtitle}>View upcoming interviews</Text>
+</TouchableOpacity>
+
         </View>
         <View style={styles.cardRow}>
-          <View style={styles.blueCard}>
-            <Image source={require('../../assets/icons/building.png')} style={styles.cardIcon} />
+          <TouchableOpacity style={styles.blueCard} onPress={() => navigation.navigate('CompanyStats')}>
+            <Image source={require('../../../assets/icons/building.png')} style={styles.cardIcon} />
             <Text style={styles.cardTitle}>Company Stats</Text>
             <Text style={styles.cardSubtitle}>Growth & posting metrics</Text>
-          </View>
-          <View style={styles.blueCard}>
-            <Image source={require('../../assets/icons/feedback.png')} style={styles.cardIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.blueCard} onPress={() => navigation.navigate('Feedback')}>
+            <Image source={require('../../../assets/icons/feedback.png')} style={styles.cardIcon} />
             <Text style={styles.cardTitle}>Feedback</Text>
             <Text style={styles.cardSubtitle}>Candidate experience</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Activity Sections */}
@@ -136,6 +156,7 @@ const OrganizationHomeScreen = () => {
 
 export default OrganizationHomeScreen;
 
+// ---------- Styles ------------------
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -240,11 +261,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2C3E50',
     marginBottom: 8,
-  },
-  sectionText: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
   },
   activityCard: {
     backgroundColor: '#FFFFFF',

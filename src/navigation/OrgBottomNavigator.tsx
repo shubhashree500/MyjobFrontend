@@ -3,10 +3,10 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image, StyleSheet } from 'react-native';
 
-import OrganizationHomeScreen from '../screens/Organization/OrganizationDashboard';
-import ManageJobsScreen from '../screens/Organization/ManageJobsScreen';
+import OrganizationHomeScreen from '../screens/Organization/Dashboard/OrganizationDashboard.tsx';
+import ManageJobsScreen from '../screens/Organization/Manage/ManageJobsScreen';
 import ApplicationsScreen from '../screens/Organization/ApplicationsScreen';
-import PostScreen from '../screens/Organization/PostScreen';
+import PostScreen from '../screens/Organization/Post/PostMainScreen.tsx';
 import MessagesScreen from '../screens/Organization/MessagesScreen';
 
 const Tab = createBottomTabNavigator();
