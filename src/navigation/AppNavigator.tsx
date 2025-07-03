@@ -19,11 +19,11 @@ import ActiveJobsScreen from '../screens/Organization/Dashboard/ActiveJobsScreen
 import TotalApplicants from '../screens/Organization/Dashboard/TotalApplicants';
 import TopCandidatesScreen from '../screens/Organization/Dashboard/TopCandidatesScreen';
 import JobAnalyticsScreen from '../screens/Organization/Dashboard/AnalyticsInsightsScreen';
-// import CandidateInsightsScreen from '../screens/Organization/Dashboard/CandidateInsightsScreen';
+import AnnouncementScreen from '../screens/Organization/Dashboard/AnnouncementScreen';
 import InterviewScheduleScreen from '../screens/Organization/Dashboard/InterviewScheduleScreen';
 import CompanyStatsScreen from '../screens/Organization/Dashboard/CompanyStatsScreen';
 import FeedbackScreen from '../screens/Organization/Dashboard/FeedbackScreen';
-
+import CampusDriveDetails from '../screens/Organization/Campus/CampusDriveDetails';
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -47,9 +47,10 @@ const AppNavigator = () => {
       <Stack.Screen name="TopCandidates" component={TopCandidatesScreen} />
       <Stack.Screen name="JobAnalytics" component={JobAnalyticsScreen} />
       <Stack.Screen name="InterviewSchedule" component={InterviewScheduleScreen} />
-      {/* <Stack.Screen name="CandidateInsights" component={CandidateInsightsScreen} /> */}
+      <Stack.Screen name="Announcement" component={AnnouncementScreen} />
       <Stack.Screen name="CompanyStats" component={CompanyStatsScreen} />
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
+      <Stack.Screen name="CampusDriveDetails" component={CampusDriveDetails} />
       </Stack.Navigator>
     </NavigationContainer>
   );

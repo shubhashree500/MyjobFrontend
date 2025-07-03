@@ -90,9 +90,9 @@ const OrganizationHomeScreen = () => {
             <Text style={styles.statValue}>35</Text>
             <Text style={styles.statLabel}>Top Candidates</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('Feedback')}>
+          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('Announcement')}>
             <Text style={styles.statValue}>18</Text>
-            <Text style={styles.statLabel}>New Messages</Text>
+            <Text style={styles.statLabel}>Announcement</Text>
           </TouchableOpacity>
         </View>
 
@@ -123,17 +123,41 @@ const OrganizationHomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Activity Sections */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activities</Text>
-          <View style={styles.activityCard}>
-            <Text style={styles.activityText}>📥 You received 8 new applications for “Frontend Developer”.</Text>
-          </View>
-          <View style={styles.activityCard}>
-            <Text style={styles.activityText}>💬 2 new messages from candidates today.</Text>
-          </View>
-        </View>
+    
+{/* Campus Drives Section */}
+<View style={styles.section}>
+  <Text style={styles.sectionTitle}>Campus Drives</Text>
 
+  <TouchableOpacity
+    style={styles.activityCard}
+    onPress={() => navigation.navigate('CampusDriveDetails')}
+  >
+    <Text style={styles.activityText}>
+      🏫 CV Raman College - B.Tech Drive - 12th July, 10 AM
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.activityCard}
+    onPress={() => navigation.navigate('CampusDriveDetails')}
+  >
+    <Text style={styles.activityText}>
+      🏫 KIIT University - MCA Internship - 16th July, 2 PM
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.activityCard}
+    onPress={() => navigation.navigate('CampusDriveDetails')}
+  >
+
+    <Text style={styles.activityText}>
+      🏫 ITER Bhubaneswar - Job Fair - 25th July, 11 AM
+    </Text>
+  </TouchableOpacity>
+</View>
+       
+{/* Upcoming Interviews */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Upcoming Interviews</Text>
           <View style={styles.activityCard}>
@@ -141,13 +165,6 @@ const OrganizationHomeScreen = () => {
           </View>
           <View style={styles.activityCard}>
             <Text style={styles.activityText}>📅 Tue, 18th June – 3:00 PM with Shreya Das (React Developer)</Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Announcements</Text>
-          <View style={styles.activityCard}>
-            <Text style={styles.activityText}>📢 New referral bonus policy will be live from July 1st!</Text>
           </View>
         </View>
 
