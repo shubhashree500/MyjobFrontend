@@ -18,22 +18,30 @@ const OrganizationHomeScreen = () => {
  const [jobCount, setJobCount] = useState<number>(0);
   const [loadingJobs, setLoadingJobs] = useState<boolean>(true);
  
-  useEffect(() => {
-    const fetchJobCount = async () => {
-      try {
-        const res = await axios.get(`${apiConfig.apiUrl}/postedjob/getAll`);
-        if (Array.isArray(res.data?.data)) {
-          setJobCount(res.data.data.length);
-        }
-      } catch (error) {
-        console.error('Failed to fetch job count:', error);
-      } finally {
-        setLoadingJobs(false);
-      }
-    };
+ useEffect(() => {
+  const fetchJobCount = async () => {
+    console.log('🔄 Fetching job count...');
+    try {
+      const res = await axios.get(`${apiConfig.apiUrl}/postedjob/getAll`);
+      console.log('✅ Response received:', res.data);
 
-    fetchJobCount();
-  }, []);
+      if (Array.isArray(res.data?.data)) {
+        setJobCount(res.data.data.length);
+        console.log('📊 Job count:', res.data.data.length);
+      } else {
+        console.warn('⚠️ Unexpected response format:', res.data);
+        setJobCount(0);
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to fetch job count:', error?.message || error);
+      setJobCount(0); // fallback to zero
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
+
+  fetchJobCount();
+}, []);
 
   return (
     <SafeAreaView style={styles.container}>
