@@ -5,7 +5,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import OrgBottomNavigator from './OrgBottomNavigator';
 import OrganizationProfile from '../screens/Common/ProfileScreen';
 import SettingsScreen from '../screens/Common/SettingScreen';
-import UserHomeScreen from '../screens/JobSeeker/UserDashboardScreen';
+import UserHomeScreen from '../screens/JobSeeker/Dashboard/UserDashboardScreen';
 
 const Drawer = createDrawerNavigator();
 

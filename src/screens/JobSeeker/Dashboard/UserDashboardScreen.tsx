@@ -4,21 +4,11 @@ import {
   Text,
   StyleSheet,
   Image,
-  TouchableOpacity,
   ScrollView,
   SafeAreaView,
   FlatList,
   Dimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
-
-type DrawerParamList = {
-  DashboardTabs: undefined;
-  Profile: undefined;
-  Settings: undefined;
-  UserHome: undefined;
-};
 
 const { width } = Dimensions.get('window');
 const imageRatio = 9 / 4;
@@ -26,24 +16,23 @@ const imageHeight = width / imageRatio;
 
 const bannerImages = [
   {
-    image: require('../../assets/Banner/1.jpg'),
+    image: require('../../../assets/Banner/1.jpg'),
     title: 'Explore Jobs',
     subtitle: 'Best matched jobs for you',
   },
   {
-    image: require('../../assets/Banner/2.png'),
+    image: require('../../../assets/Banner/2.png'),
     title: 'Upgrade Your Skills',
     subtitle: 'Find skill-based roles',
   },
   {
-    image: require('../../assets/Banner/3.png'),
+    image: require('../../../assets/Banner/3.png'),
     title: 'Ace Interviews',
     subtitle: 'Prepare with confidence',
   },
 ];
 
 const UserDashboardScreen = () => {
-  const navigation = useNavigation();
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -69,23 +58,11 @@ const UserDashboardScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topHeader}>
-        <TouchableOpacity
-          onPress={() => {
-            const parent = navigation.getParent() as DrawerNavigationProp<DrawerParamList>;
-            if (parent?.toggleDrawer) {
-              parent.toggleDrawer();
-            }
-          }}
-        >
-          <Image
-            source={require('../../assets/icons/menu.png')}
-            style={styles.menuIcon}
-          />
-        </TouchableOpacity>
         <Text style={styles.screenTitle}>User Dashboard</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      {/* ✅ FIXED: wrap all in ScrollView */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content}>
         <View style={styles.bannerContainer}>
           <FlatList
             ref={flatListRef}
@@ -101,10 +78,10 @@ const UserDashboardScreen = () => {
         <Text style={styles.sectionTitle}>Find Your Jobs</Text>
         <View style={styles.statsGrid}>
           {[
-            ['Remote', '#E5F5FF', require('../../assets/icons/remote.png')],
-            ['Full Time', '#F0E8FF', require('../../assets/icons/fulltime.png')],
-            ['Part Time', '#FFE8D9', require('../../assets/icons/parttime.png')],
-            ['Internship', '#D9F3C9', require('../../assets/icons/internship.png')],
+            ['Remote', '#E5F5FF', require('../../../assets/icons/remote.png')],
+            ['Full Time', '#F0E8FF', require('../../../assets/icons/fulltime.png')],
+            ['Part Time', '#FFE8D9', require('../../../assets/icons/parttime.png')],
+            ['Internship', '#D9F3C9', require('../../../assets/icons/internship.png')],
           ].map(([label, bgColor, icon], index) => (
             <View key={index} style={[styles.statCard, { backgroundColor: bgColor }]}>
               <Image source={icon} style={styles.cardIcon} />
@@ -116,12 +93,12 @@ const UserDashboardScreen = () => {
         <Text style={styles.sectionTitle}>Specializations</Text>
         <View style={styles.cardRow}>
           <View style={styles.blueCard}>
-            <Image source={require('../../assets/icons/graphics.png')} style={styles.cardIcon} />
+            <Image source={require('../../../assets/icons/graphics.png')} style={styles.cardIcon} />
             <Text style={styles.cardTitle}>UI/UX</Text>
             <Text style={styles.cardSubtitle}>Design based jobs</Text>
           </View>
           <View style={styles.blueCard}>
-            <Image source={require('../../assets/icons/connections.png')} style={styles.cardIcon} />
+            <Image source={require('../../../assets/icons/connections.png')} style={styles.cardIcon} />
             <Text style={styles.cardTitle}>Development</Text>
             <Text style={styles.cardSubtitle}>Frontend & Backend</Text>
           </View>
@@ -157,10 +134,7 @@ const UserDashboardScreen = () => {
 export default UserDashboardScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7FBFF',
-  },
+  container: { flex: 1, backgroundColor: '#F7FBFF' },
   topHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -169,27 +143,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     elevation: 3,
   },
-  menuIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 15,
-  },
   screenTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#333',
     fontFamily: 'sans-serif-medium',
   },
-  content: {
-    padding: 20,
-  },
-  bannerContainer: {
-    marginBottom: 20,
-  },
-  bannerItem: {
-    width,
-    alignItems: 'center',
-  },
+  content: { padding: 20 },
+  bannerContainer: { marginBottom: 20 },
+  bannerItem: { width, alignItems: 'center' },
   bannerImage: {
     width: width - 30,
     height: imageHeight,
@@ -290,3 +252,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
   },
 });
+

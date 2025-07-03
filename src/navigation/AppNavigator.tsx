@@ -10,8 +10,9 @@ import RegistrationScreen from '../screens/Auth/RegistrationScreen';
 import UserRegn from '../screens/Auth/UserRegn';
 import OrganizationRegn from '../screens/Auth/OrganizationRegn';
 import OrgBottomNavigator from './OrgBottomNavigator';
+import JobseekerBottomNavigator  from './JobseekerBottomNavigator.tsx';
 import OrgDrawerNavigator from './OrgDrawerNavigator';
-import UserDashboardScreen from '../screens/JobSeeker/UserDashboardScreen';
+// import UserDashboardScreen from '../screens/JobSeeker/Dashboard/UserDashboardScreen.tsx';
 import PostInternshipScreen from '../screens/Organization/Post/PostInternshipScreen';
 import PostCampusScreen from '../screens/Organization/Post/PostCampusScreen';
 import PostJobScreen from '../screens/Organization/Post/PostJobScreen';
@@ -37,8 +38,9 @@ const AppNavigator = () => {
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="OrganizationRegn" component={OrganizationRegn} />
         <Stack.Screen name="OrganizationDashboard" component={OrgBottomNavigator} />
+        <Stack.Screen name="JobseekerDashboard" component={JobseekerBottomNavigator} />
         <Stack.Screen name="OrganizationDrawer" component={OrgDrawerNavigator} />
-        <Stack.Screen name="UserDashboard" component={UserDashboardScreen} />
+        {/* <Stack.Screen name="UserDashboard" component={UserDashboardScreen} /> */}
         <Stack.Screen name="PostJob" component={PostJobScreen} options={{ title: 'Post a Job' }} />
         <Stack.Screen name="PostCampus" component={PostCampusScreen} options={{ title: 'Post a Campus Drive' }} />
         <Stack.Screen name="PostInternship" component={PostInternshipScreen} options={{ title: 'Post an Internship' }} />
