@@ -6,7 +6,7 @@ import { Image, StyleSheet } from 'react-native';
 import UserDashboardScreen from '../screens/JobSeeker/Dashboard/UserDashboardScreen';
 import SavedJobsScreen from '../screens/JobSeeker/Dashboard/SavedJobsScreen';
 // import SavedJobsScreen from '../screens/Jobseeker/SavedJobsScreen';
-import ApplicationsScreen from '../screens/JobSeeker/Dashboard/ApplicationsScreen';
+import SearchScreen from '../screens/JobSeeker/Dashboard/SearchScreen';
 import ProfileScreen from '../screens/JobSeeker/Dashboard/ProfileScreen';
 import MessagesScreen from '../screens/JobSeeker/Dashboard/MessagesScreen';
 
@@ -35,8 +35,8 @@ const JobseekerBottomNavigator = () => {
             case 'SavedJobs':
               iconSource = require('../assets/icons/bookmark.png');
               break;
-            case 'Applications':
-              iconSource = require('../assets/icons/application.png');
+            case 'Search':
+              iconSource = require('../assets/icons/search2.png');
               break;
             case 'Messages':
               iconSource = require('../assets/icons/message.png');
@@ -60,7 +60,7 @@ const JobseekerBottomNavigator = () => {
     >
       <Tab.Screen name="Dashboard" component={UserDashboardScreen} />
       <Tab.Screen name="SavedJobs" component={SavedJobsScreen} />
-      <Tab.Screen name="Applications" component={ApplicationsScreen} />
+      <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Messages" component={MessagesScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
