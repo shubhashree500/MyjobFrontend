@@ -8,8 +8,9 @@ import {
   SafeAreaView,
   FlatList,
   Dimensions,
+  TouchableOpacity
 } from 'react-native';
-
+import moment from 'moment';
 const { width } = Dimensions.get('window');
 const imageRatio = 9 / 4;
 const imageHeight = width / imageRatio;
@@ -29,6 +30,19 @@ const bannerImages = [
     image: require('../../../assets/Banner/3.png'),
     title: 'Ace Interviews',
     subtitle: 'Prepare with confidence',
+  },
+];
+
+const upcomingInterviews = [
+  {
+    date: '2025-07-05T11:00:00',
+    company: 'TechCorp',
+    status: 'Scheduled',
+  },
+  {
+    date: '2025-07-07T14:00:00',
+    company: 'CreativeSoft',
+    status: 'Pending',
   },
 ];
 
@@ -104,6 +118,31 @@ const UserDashboardScreen = () => {
           </View>
         </View>
 
+
+
+<Text style={styles.sectionTitle}>Popular Companies</Text>
+<FlatList
+  data={[
+    { name: 'TechCorp', logo: require('../../../assets/icons/TechCorp.png') },
+    { name: 'Designify', logo: require('../../../assets/icons/Designify.png') },
+    { name: 'CodeCraft', logo: require('../../../assets/icons/CodeCraft.png') },
+    { name: 'SoftSolutions', logo: require('../../../assets/icons/SoftSolutions.png') },
+  ]}
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  keyExtractor={(item, index) => index.toString()}
+  contentContainerStyle={{ paddingVertical: 10 }}
+  renderItem={({ item }) => (
+    <View style={styles.companyCard}>
+      <Image source={item.logo} style={styles.companyLogo} />
+      <Text style={styles.companyName}>{item.name}</Text>
+      <TouchableOpacity style={styles.followBtn}>
+        <Text style={styles.followBtnText}>+ Follow</Text>
+      </TouchableOpacity>
+    </View>
+  )}
+/>
+
         <Text style={styles.sectionTitle}>Recent Job List</Text>
         <View style={styles.activityCard}>
           <Text style={styles.activityText}>• React Native Developer at XYZ</Text>
@@ -111,11 +150,25 @@ const UserDashboardScreen = () => {
           <Text style={styles.activityText}>• Backend Engineer at DEF</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Upcoming Interviews</Text>
-        <View style={styles.activityCard}>
-          <Text style={styles.activityText}>📅 19 June – 11:00 AM with TechCorp</Text>
-          <Text style={styles.activityText}>📅 21 June – 2:00 PM with CreativeSoft</Text>
-        </View>
+      <Text style={styles.sectionTitle}>Upcoming Interviews</Text>
+{upcomingInterviews.map((interview, index) => {
+  const timeLeft = moment(interview.date).fromNow(); // ⏱ Countdown
+
+  return (
+    <View key={index} style={styles.interviewItem}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.activityText}>
+          📅 {moment(interview.date).format('D MMM YYYY, h:mm A')} with {interview.company}
+        </Text>
+        <Text style={styles.countdownText}>Starts {timeLeft}</Text>
+      </View>
+      <View style={[styles.chip, { backgroundColor: interview.status === 'Scheduled' ? '#4CAF50' : '#FFC107' }]}>
+        <Text style={styles.chipText}>{interview.status}</Text>
+      </View>
+    </View>
+  );
+})}
+
 
         <Text style={styles.sectionTitle}>Announcements</Text>
         <View style={styles.activityCard}>
@@ -216,7 +269,84 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     marginBottom: 10,
-  },
+  },followBtn: {
+  marginTop: 6,
+  backgroundColor: '#007AFF',
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 6,
+},
+followBtnText: {
+  color: '#fff',
+  fontSize: 12,
+  fontWeight: '500',
+},
+
+interviewItem: {
+  backgroundColor: '#fff',
+  padding: 12,
+  borderRadius: 10,
+  marginBottom: 10,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  elevation: 2,
+},
+chip: {
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 20,
+  alignSelf: 'flex-start',
+},
+chipText: {
+  color: '#fff',
+  fontSize: 12,
+  fontWeight: '600',
+},
+countdownText: {
+  fontSize: 13,
+  color: '#666',
+  marginTop: 4,
+  fontStyle: 'italic',
+},
+
+  companyCard: {
+  backgroundColor: '#fff',
+  padding: 10,
+  borderRadius: 10,
+  alignItems: 'center',
+  marginRight: 12,
+  elevation: 2,
+  width: 100,
+},
+companyLogo: {
+  width: 50,
+  height: 50,
+  marginBottom: 6,
+  resizeMode: 'contain',
+},
+companyName: {
+  fontSize: 13,
+  color: '#333',
+  textAlign: 'center',
+  fontFamily: 'sans-serif',
+},
+
+interviewRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 8,
+},
+
+badge: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: '#F44336',
+  marginLeft: 10,
+},
+
   cardTitle: {
     fontSize: 15,
     fontWeight: '600',
