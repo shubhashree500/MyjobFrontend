@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,55 +11,74 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
+import apiConfig from '../../../context/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Job {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
+  id?: number;
+  degName: string;
+  skills?: string[];
+  type?: string;
+  location?: string;
+  organization: {
+    organizationName: string;
+    address: string;
+  };
 }
 
-const allJobs: Job[] = [
-  { id: '1', title: 'Frontend Developer', company: 'Techie Corp', location: 'Bangalore', type: 'Full-Time' },
-  { id: '2', title: 'Backend Developer', company: 'Codebase Ltd', location: 'Remote', type: 'Part-Time' },
-  { id: '3', title: 'UI/UX Designer', company: 'DesignHub', location: 'Mumbai', type: 'Internship' },
-  { id: '4', title: 'React Native Developer', company: 'MobileLab', location: 'Chennai', type: 'Full-Time' },
-  { id: '5', title: 'Data Analyst', company: 'DataWise', location: 'Remote', type: 'Full-Time' },
-  { id: '6', title: 'Project Manager', company: 'BuildFlow', location: 'Delhi', type: 'Full-Time' },
-  { id: '7', title: 'DevOps Engineer', company: 'CloudOps', location: 'Remote', type: 'Full-Time' },
-  { id: '8', title: 'Android Developer', company: 'AppGuru', location: 'Hyderabad', type: 'Internship' },
-  { id: '9', title: 'Tech Support', company: 'HelpDesk', location: 'Bangalore', type: 'Part-Time' },
-  { id: '10', title: 'Graphic Designer', company: 'PixelStudios', location: 'Mumbai', type: 'Full-Time' },
-  { id: '11', title: 'iOS Developer', company: 'SwiftSoft', location: 'Chennai', type: 'Full-Time' },
-  { id: '12', title: 'QA Tester', company: 'BugTrack', location: 'Remote', type: 'Internship' },
-  // Add more if needed
-];
-
-const PAGE_SIZE = 5;
-
 const JobSearchScreen = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [locationFilter, setLocationFilter] = useState('All');
-  const [typeFilter, setTypeFilter] = useState('All');
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [visibleJobs, setVisibleJobs] = useState<Job[]>([]);
-  const [savedJobs, setSavedJobs] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+ const [locationFilter, setLocationFilter] = useState<string>('');
+const [typeFilter, setTypeFilter] = useState<string>('');
+  const [savedJobs, setSavedJobs] = useState<number[]>([]);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const uniqueLocations = ['All', ...new Set(allJobs.map(job => job.location))];
-  const uniqueTypes = ['All', ...new Set(allJobs.map(job => job.type))];
 
-  const getFilteredJobs = () => {
-    return allJobs.filter(job => {
-      const matchesQuery =
-        job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesLocation = locationFilter === 'All' || job.location === locationFilter;
-      const matchesType = typeFilter === 'All' || job.type === typeFilter;
-      return matchesQuery && matchesLocation && matchesType;
-    });
+  const PAGE_SIZE = 5;
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${apiConfig.apiUrl}/postedjob/getAll`);
+      const data = response.data.data;
+      setJobs(data);
+      setVisibleJobs(data.slice(0, PAGE_SIZE));
+      setPage(2);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const uniqueLocations = ['All', ...new Set(jobs.map(j => j.organization.address))];
+  const uniqueTypes = ['All', ...new Set(jobs.map(j => j.type || 'Unknown'))];
+
+ const getFilteredJobs = () => {
+  return jobs.filter(job => {
+    const query = searchQuery.toLowerCase();
+    const matchesSearch =
+      job.degName?.toLowerCase().includes(query) ||
+      job.organization?.organizationName?.toLowerCase().includes(query);
+
+    const matchesLocation =
+      locationFilter === '' || job.organization?.address === locationFilter;
+
+    const matchesType =
+      typeFilter === '' || job.type === typeFilter;
+
+    return matchesSearch && matchesLocation && matchesType;
+  });
+};
 
   const loadJobs = (reset = false) => {
     const filtered = getFilteredJobs();
@@ -71,59 +90,108 @@ const JobSearchScreen = () => {
       setVisibleJobs(filtered.slice(0, PAGE_SIZE));
       setPage(2);
     } else {
-      const more = filtered.slice(start, end);
-      setVisibleJobs(prev => [...prev, ...more]);
+      setVisibleJobs(prev => [...prev, ...filtered.slice(start, end)]);
       setPage(prev => prev + 1);
     }
   };
 
   useEffect(() => {
     loadJobs(true);
-  }, [searchQuery, locationFilter, typeFilter]);
+  }, [searchQuery, locationFilter, typeFilter, jobs]);
 
   const handleApply = (job: Job) => {
-    Alert.alert('Apply', `Applied for ${job.title} at ${job.company}`);
+    Alert.alert('Apply', `Applied for ${job.degName} at ${job.organization.organizationName}`);
   };
+  
+const toggleSave = async (jobId?: number) => {
+  if (!jobId) return;
 
-  const toggleSave = (jobId: string) => {
-    setSavedJobs(prev =>
-      prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
-    );
-  };
+  const userId = await AsyncStorage.getItem('userId');
+  if (!userId) return;
 
-  const renderItem = ({ item }: { item: Job }) => {
-    const isSaved = savedJobs.includes(item.id);
-    return (
-      <View style={styles.jobCard}>
-        <Text style={styles.jobTitle}>{item.title}</Text>
-        <Text style={styles.jobCompany}>{item.company}</Text>
-        <Text style={styles.jobDetails}>{item.location} • {item.type}</Text>
+  const isAlreadySaved = savedJobs.includes(jobId);
+  const endpoint = `${apiConfig.apiUrl}/savedjob`;
 
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.applyButton}
-            onPress={() => handleApply(item)}
-          >
-            <Text style={styles.buttonText}>Apply</Text>
-          </TouchableOpacity>
+  try {
+    if (isAlreadySaved) {
+      // Unsave (DELETE)
+      await axios.delete(`${endpoint}/delete/${userId}/${jobId}`);
+    } else {
+      // Save (POST)
+      await axios.post(`${endpoint}/create`, {
+        jobId,
+        userId,
+        createdBy: 1, // You can use actual logged-in user ID or role if available
+        status: 1
+      });
+    }
 
-          <TouchableOpacity
-            style={[styles.saveButton, isSaved && styles.saveButtonActive]}
-            onPress={() => toggleSave(item.id)}
-          >
-            <Text style={styles.buttonText}>{isSaved ? 'Saved' : 'Save'}</Text>
-          </TouchableOpacity>
-        </View>
+    // Update local savedJobs list
+    const updated = isAlreadySaved
+      ? savedJobs.filter(id => id !== jobId)
+      : [...savedJobs, jobId];
+
+    setSavedJobs(updated);
+  } catch (error) {
+    console.error('Error saving/unsaving job:', error);
+  }
+};
+
+
+useEffect(() => {
+  const loadSaved = async () => {
+  const userId = await AsyncStorage.getItem('userId');
+  console.log('Loading saved jobs for user:', userId); // 👈 Debug log
+
+  if (!userId) return;
+  try {
+    const res = await axios.get(`${apiConfig.apiUrl}/savedjob/get/${userId}`);
+    const ids = res.data.savedJobs.map((job: any) => job.jobId);
+    setSavedJobs(ids);
+  } catch (error) {
+    console.error('Error loading saved jobs:', error); // 🔍 Shows 404
+  }
+};
+  loadSaved();
+}, []);
+
+
+ const renderItem = ({ item }: { item: Job }) => {
+  const isSaved = !!item.id && savedJobs.includes(item.id); // ✅ FIXED HERE
+
+  return (
+    <View style={styles.jobCard}>
+      <Text style={styles.jobTitle}>{item.degName}</Text>
+      <Text style={styles.jobCompany}>{item.organization.organizationName}</Text>
+      <Text style={styles.jobDetails}>
+        {item.organization.address} • {item.type || 'Type N/A'}
+      </Text>
+
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.applyButton} onPress={() => handleApply(item)}>
+          <Text style={styles.buttonText}>Apply</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.saveButton,
+            isSaved ? styles.saveButtonActive : null, // ✅ FIXED HERE (prevent falsey values like 0)
+          ]}
+          onPress={() => toggleSave(item.id)}
+        >
+          <Text style={styles.buttonText}>{isSaved ? 'Saved' : 'Save'}</Text>
+        </TouchableOpacity>
       </View>
-    );
-  };
+    </View>
+  );
+};
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
     setTimeout(() => {
       loadJobs();
       setIsLoadingMore(false);
-    }, 500); // Simulate loading delay
+    }, 500);
   };
 
   return (
@@ -141,53 +209,60 @@ const JobSearchScreen = () => {
         <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Location</Text>
           <Picker
-            selectedValue={locationFilter}
-            onValueChange={setLocationFilter}
-            style={styles.picker}
-          >
-            {uniqueLocations.map(loc => (
-              <Picker.Item key={loc} label={loc} value={loc} />
-            ))}
-          </Picker>
+  selectedValue={locationFilter}
+  onValueChange={(value) => setLocationFilter(value)}
+  style={styles.picker}
+>
+   <Picker.Item label="Select Location" value="" enabled={false} />
+  {uniqueLocations.map(loc => (
+    <Picker.Item key={loc} label={loc} value={loc} />
+  ))}
+</Picker>
         </View>
 
         <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Type</Text>
-          <Picker
-            selectedValue={typeFilter}
-            onValueChange={setTypeFilter}
-            style={styles.picker}
-          >
-            {uniqueTypes.map(type => (
-              <Picker.Item key={type} label={type} value={type} />
-            ))}
-          </Picker>
+         <Picker
+  selectedValue={typeFilter}
+  onValueChange={(value) => setTypeFilter(value)}
+  style={styles.picker}
+>
+  <Picker.Item label="Select Type" value="" enabled={false} />
+  {uniqueTypes.map(type => (
+    <Picker.Item key={type} label={type} value={type} />
+  ))}
+</Picker>
+
         </View>
       </View>
 
-      <FlatList
-        data={visibleJobs}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        ListFooterComponent={
-          getFilteredJobs().length > visibleJobs.length ? (
-            <TouchableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
-              {isLoadingMore ? (
-                <ActivityIndicator size="small" color="#000" />
-              ) : (
-                <Text style={styles.buttonText}>Load More</Text>
-              )}
-            </TouchableOpacity>
-          ) : null
-        }
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#000" />
+      ) : (
+        <FlatList
+          data={visibleJobs}
+          keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          ListFooterComponent={
+            getFilteredJobs().length > visibleJobs.length ? (
+              <TouchableOpacity onPress={handleLoadMore} style={styles.loadMoreButton}>
+                {isLoadingMore ? (
+                  <ActivityIndicator size="small" color="#000" />
+                ) : (
+                  <Text style={styles.buttonText}>Load More</Text>
+                )}
+              </TouchableOpacity>
+            ) : null
+          }
+          ListEmptyComponent={<Text style={styles.emptyText}>No jobs found.</Text>}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
 export default JobSearchScreen;
-
 
 const styles = StyleSheet.create({
   container: {
@@ -220,10 +295,14 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   picker: {
-    height: 40,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-  },
+  height: 50, 
+  backgroundColor: '#fff',
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  color: '#333',
+  fontSize: 16,  
+},
+
   filterLabel: {
     marginBottom: 4,
     fontWeight: '600',
@@ -284,5 +363,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 10,
   },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 40,
+    fontSize: 16,
+    color: '#777',
+  },
 });
-
