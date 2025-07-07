@@ -103,7 +103,7 @@ const [typeFilter, setTypeFilter] = useState<string>('');
     Alert.alert('Apply', `Applied for ${job.degName} at ${job.organization.organizationName}`);
   };
   
-const toggleSave = async (jobId?: number) => {
+ const toggleSave = async (jobId?: number) => {
   if (!jobId) return;
 
   const userId = await AsyncStorage.getItem('userId');
@@ -114,29 +114,29 @@ const toggleSave = async (jobId?: number) => {
 
   try {
     if (isAlreadySaved) {
-      // Unsave (DELETE)
+      // ✅ UNSAVE logic (DELETE)
       await axios.delete(`${endpoint}/delete/${userId}/${jobId}`);
+      setSavedJobs(prev => prev.filter(id => id !== jobId));
     } else {
-      // Save (POST)
+      // ✅ SAVE only if not already saved
       await axios.post(`${endpoint}/create`, {
         jobId,
         userId,
-        createdBy: 1, // You can use actual logged-in user ID or role if available
-        status: 1
+        createdBy: 1,
+        status: 1,
       });
+      setSavedJobs(prev => [...prev, jobId]);
     }
-
-    // Update local savedJobs list
-    const updated = isAlreadySaved
-      ? savedJobs.filter(id => id !== jobId)
-      : [...savedJobs, jobId];
-
-    setSavedJobs(updated);
-  } catch (error) {
-    console.error('Error saving/unsaving job:', error);
+  } catch (error: any) {
+    if (error.response?.status === 409) {
+      console.warn('Job already saved.');
+      Alert.alert('Already Saved', 'You have already saved this job.');
+    } else {
+      console.error('Error saving/unsaving job:', error);
+      Alert.alert('Error', 'Something went wrong.');
+    }
   }
 };
-
 
 useEffect(() => {
   const loadSaved = async () => {

@@ -13,7 +13,7 @@ import apiConfig from '../../../context/config';
 type Job = {
   id?: number;
   degName: string;
-  skills?: string[]; // Optional to prevent runtime crash
+  skills?: string; // ✅ changed from string[] to string
   organization: {
     organizationName: string;
     logo: string;
@@ -30,7 +30,6 @@ const ActiveJobsScreen = () => {
       const response: AxiosResponse<{ data: Job[] }> = await axios.get(
         `${apiConfig.apiUrl}/postedjob/getAll`
       );
-
       console.log('Fetched jobs:', response.data.data);
       setJobs(response.data.data);
     } catch (error) {
@@ -49,10 +48,6 @@ const ActiveJobsScreen = () => {
   }, []);
 
   const renderJobItem = ({ item }: { item: Job }) => {
-    const skillsDisplay = Array.isArray(item.skills)
-      ? item.skills.join(', ')
-      : 'N/A';
-
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -72,7 +67,7 @@ const ActiveJobsScreen = () => {
           </View>
         </View>
         <Text style={styles.skillsLabel}>Skills:</Text>
-        <Text style={styles.skillsText}>{skillsDisplay}</Text>
+        <Text style={styles.skillsText}>{item.skills || 'N/A'}</Text>
       </View>
     );
   };
