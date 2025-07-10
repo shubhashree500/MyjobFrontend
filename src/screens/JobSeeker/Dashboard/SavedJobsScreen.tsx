@@ -35,7 +35,7 @@ const SavedJobsScreen = () => {
 
     try {
       setLoading(true);
-      const res = await axios.get(`${apiConfig.apiUrl}/savedjob/get/${userId}`);
+     const res = await axios.get(`${apiConfig.apiUrl}/savedjob/saved-jobs/${userId}`);
       const saved = res.data.savedJobs.map((entry: any) => ({
         id: entry.jobId,
         degName: entry.jobDetails?.degName || 'N/A',
