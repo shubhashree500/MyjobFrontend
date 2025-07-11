@@ -100,9 +100,42 @@ const JobSearchScreen = () => {
     loadJobs(true);
   }, [searchQuery, locationFilter, typeFilter, jobs]);
 
-  const handleApply = (job: Job) => {
-    Alert.alert('Apply', `Applied for ${job.degName} at ${job.organization.organizationName}`);
-  };
+const handleApply = async (job: Job) => {
+  console.log('🔍 Applying to job:', job);
+
+  const token = await AsyncStorage.getItem('userToken');
+  const userId = await AsyncStorage.getItem('userId');
+
+  console.log('🔐 Retrieved token:', token);
+  console.log('👤 Retrieved userId:', userId);
+
+  if (!token || !userId) {
+    Alert.alert('Error', 'Please log in to apply.');
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${apiConfig.apiUrl}/jobApplication/apply-job`,
+      {
+        job_id: job.id,        // ✅ use job_id instead of jobId
+        resume_url: '',        // ✅ required field
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log('✅ Job applied successfully:', response.data);
+    Alert.alert('Success', `You applied for ${job.degName}`);
+  } catch (error: any) {
+    console.error('❌ Error applying to job:', error.response?.data || error.message);
+    Alert.alert('Application Failed', error.response?.data?.message || 'Something went wrong');
+  }
+};
+
 
   const toggleSave = async (jobId?: number) => {
     if (!jobId) return;
@@ -119,10 +152,9 @@ const JobSearchScreen = () => {
         setSavedJobs(prev => prev.filter(id => id !== jobId));
       } else {
         await axios.post(`${endpoint}/create`, {
-  jobId,
-  userId,
-});
-
+          jobId,
+          userId,
+        });
         setSavedJobs(prev => [...prev, jobId]);
       }
     } catch (error: any) {
@@ -141,10 +173,13 @@ const JobSearchScreen = () => {
       if (!userId) return;
 
       try {
-const res = await axios.get(`${apiConfig.apiUrl}/savedjob/user/${userId}`);
-        // const ids = res.data.savedJobs.map((job: any) => job.jobId);
-        const ids = res.data.map((item: any) => item.jobId);
-        setSavedJobs(ids);
+        const res = await axios.get(`${apiConfig.apiUrl}/savedjob/user/${userId}`);
+        if (Array.isArray(res.data)) {
+          const ids = res.data.map((item: any) => item.jobId);
+          setSavedJobs(ids);
+        } else {
+          console.warn('❗ Unexpected saved jobs response:', res.data);
+        }
       } catch (error) {
         console.error('Error loading saved jobs:', error);
       }
@@ -255,6 +290,7 @@ const res = await axios.get(`${apiConfig.apiUrl}/savedjob/user/${userId}`);
 };
 
 export default JobSearchScreen;
+
 
 const styles = StyleSheet.create({
   container: {
