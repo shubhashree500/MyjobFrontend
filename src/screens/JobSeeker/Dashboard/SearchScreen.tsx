@@ -119,11 +119,10 @@ const JobSearchScreen = () => {
         setSavedJobs(prev => prev.filter(id => id !== jobId));
       } else {
         await axios.post(`${endpoint}/create`, {
-          jobId,
-          userId,
-          createdBy: 1,
-          status: 1,
-        });
+  jobId,
+  userId,
+});
+
         setSavedJobs(prev => [...prev, jobId]);
       }
     } catch (error: any) {
@@ -142,8 +141,9 @@ const JobSearchScreen = () => {
       if (!userId) return;
 
       try {
-        const res = await axios.get(`${apiConfig.apiUrl}/savedjob/get/${userId}`);
-        const ids = res.data.savedJobs.map((job: any) => job.jobId);
+const res = await axios.get(`${apiConfig.apiUrl}/savedjob/user/${userId}`);
+        // const ids = res.data.savedJobs.map((job: any) => job.jobId);
+        const ids = res.data.map((item: any) => item.jobId);
         setSavedJobs(ids);
       } catch (error) {
         console.error('Error loading saved jobs:', error);

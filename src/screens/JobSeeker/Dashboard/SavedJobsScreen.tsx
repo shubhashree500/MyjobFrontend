@@ -29,30 +29,45 @@ const SavedJobsScreen = () => {
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchSavedJobs = async () => {
-    const userId = await AsyncStorage.getItem('userId');
-    if (!userId) return;
+const fetchSavedJobs = async () => {
+  const userId = await AsyncStorage.getItem('userId');
+  console.log("📦 Getting saved jobs for userId:", userId);
 
-    try {
-      setLoading(true);
-      const res = await axios.get(`${apiConfig.apiUrl}/api/v1/SavedJob/saved-jobs/${userId}`);
-      const saved = res.data.savedJobs.map((entry: any) => ({
-        id: entry.jobId,
-        degName: entry.jobDetails?.degName || 'N/A',
-        jobType: entry.jobDetails?.jobType || 'N/A',
-        savedDate: entry.createdAt || '',
-        organization: {
-          organizationName: entry.jobDetails?.organization?.organizationName || 'Unknown Org',
-          address: entry.jobDetails?.jobLocation || 'No address',
-        },
-      }));
-      setAllJobs(saved);
-    } catch (error) {
-      console.error('Error fetching saved jobs:', error);
-    } finally {
-      setLoading(false);
+  if (!userId) {
+    console.warn("⚠️ No userId found in AsyncStorage");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    const url = `${apiConfig.apiUrl}/savedjob/user/${userId}`;
+    console.log("🌐 Sending GET request to:", url);
+
+    const res = await axios.get(url);
+    console.log("✅ Response received:", res.data);
+
+    const saved = res.data.savedJobs.map((entry: any) => ({
+      id: entry.jobId,
+      degName: entry.jobDetails?.degName || 'N/A',
+      jobType: entry.jobDetails?.jobType || 'N/A',
+      savedDate: entry.createdAt || '',
+      organization: {
+        organizationName: entry.jobDetails?.organization?.organizationName || 'Unknown Org',
+        address: entry.jobDetails?.jobLocation || 'No address',
+      },
+    }));
+
+    setAllJobs(saved);
+  } catch (error) {
+    console.error("❌ Error fetching saved jobs:", error);
+    if (axios.isAxiosError(error)) {
+      console.log("🔍 Axios Error details:", error.response?.data || error.message);
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useFocusEffect(
     useCallback(() => {
@@ -74,8 +89,10 @@ const SavedJobsScreen = () => {
     if (!jobId || !userId) return;
 
     try {
-      await axios.delete(`${apiConfig.apiUrl}/api/v1/SavedJob/unsave/${userId}/${jobId}`);
-      setAllJobs(prev => prev.filter(job => job.id !== jobId));
+      // await axios.delete(`${apiConfig.apiUrl}/api/v1/SavedJob/unsave/${userId}/${jobId}`);
+      
+      await axios.delete(`${apiConfig.apiUrl}/api/v1/savedjob/delete/${userId}/${jobId}`);
+setAllJobs(prev => prev.filter(job => job.id !== jobId));
     } catch (error) {
       Alert.alert('Error', 'Failed to unsave job.');
     }
