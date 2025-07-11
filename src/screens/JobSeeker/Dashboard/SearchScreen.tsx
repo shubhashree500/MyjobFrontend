@@ -1,3 +1,5 @@
+// SearchScreen.tsx
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -31,13 +33,12 @@ const JobSearchScreen = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [visibleJobs, setVisibleJobs] = useState<Job[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
- const [locationFilter, setLocationFilter] = useState<string>('');
-const [typeFilter, setTypeFilter] = useState<string>('');
+  const [locationFilter, setLocationFilter] = useState<string>('');
+  const [typeFilter, setTypeFilter] = useState<string>('');
   const [savedJobs, setSavedJobs] = useState<number[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
 
   const PAGE_SIZE = 5;
 
@@ -63,22 +64,22 @@ const [typeFilter, setTypeFilter] = useState<string>('');
   const uniqueLocations = ['All', ...new Set(jobs.map(j => j.organization.address))];
   const uniqueTypes = ['All', ...new Set(jobs.map(j => j.type || 'Unknown'))];
 
- const getFilteredJobs = () => {
-  return jobs.filter(job => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch =
-      job.degName?.toLowerCase().includes(query) ||
-      job.organization?.organizationName?.toLowerCase().includes(query);
+  const getFilteredJobs = () => {
+    return jobs.filter(job => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        job.degName?.toLowerCase().includes(query) ||
+        job.organization?.organizationName?.toLowerCase().includes(query);
 
-    const matchesLocation =
-      locationFilter === '' || job.organization?.address === locationFilter;
+      const matchesLocation =
+        locationFilter === '' || locationFilter === 'All' || job.organization?.address === locationFilter;
 
-    const matchesType =
-      typeFilter === '' || job.type === typeFilter;
+      const matchesType =
+        typeFilter === '' || typeFilter === 'All' || job.type === typeFilter;
 
-    return matchesSearch && matchesLocation && matchesType;
-  });
-};
+      return matchesSearch && matchesLocation && matchesType;
+    });
+  };
 
   const loadJobs = (reset = false) => {
     const filtered = getFilteredJobs();
@@ -102,89 +103,81 @@ const [typeFilter, setTypeFilter] = useState<string>('');
   const handleApply = (job: Job) => {
     Alert.alert('Apply', `Applied for ${job.degName} at ${job.organization.organizationName}`);
   };
-  
- const toggleSave = async (jobId?: number) => {
-  if (!jobId) return;
 
-  const userId = await AsyncStorage.getItem('userId');
-  if (!userId) return;
+  const toggleSave = async (jobId?: number) => {
+    if (!jobId) return;
 
-  const isAlreadySaved = savedJobs.includes(jobId);
-  const endpoint = `${apiConfig.apiUrl}/savedjob`;
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) return;
 
-  try {
-    if (isAlreadySaved) {
-      // ✅ UNSAVE logic (DELETE)
-      await axios.delete(`${endpoint}/delete/${userId}/${jobId}`);
-      setSavedJobs(prev => prev.filter(id => id !== jobId));
-    } else {
-      // ✅ SAVE only if not already saved
-      await axios.post(`${endpoint}/create`, {
-        jobId,
-        userId,
-        createdBy: 1,
-        status: 1,
-      });
-      setSavedJobs(prev => [...prev, jobId]);
+    const isAlreadySaved = savedJobs.includes(jobId);
+    const endpoint = `${apiConfig.apiUrl}/savedjob`;
+
+    try {
+      if (isAlreadySaved) {
+        await axios.delete(`${endpoint}/delete/${userId}/${jobId}`);
+        setSavedJobs(prev => prev.filter(id => id !== jobId));
+      } else {
+        await axios.post(`${endpoint}/create`, {
+          jobId,
+          userId,
+          createdBy: 1,
+          status: 1,
+        });
+        setSavedJobs(prev => [...prev, jobId]);
+      }
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        Alert.alert('Already Saved', 'You have already saved this job.');
+      } else {
+        console.error('Error saving/unsaving job:', error);
+        Alert.alert('Error', 'Something went wrong.');
+      }
     }
-  } catch (error: any) {
-    if (error.response?.status === 409) {
-      console.warn('Job already saved.');
-      Alert.alert('Already Saved', 'You have already saved this job.');
-    } else {
-      console.error('Error saving/unsaving job:', error);
-      Alert.alert('Error', 'Something went wrong.');
-    }
-  }
-};
+  };
 
-useEffect(() => {
-  const loadSaved = async () => {
-  const userId = await AsyncStorage.getItem('userId');
-  console.log('Loading saved jobs for user:', userId); // 👈 Debug log
+  useEffect(() => {
+    const loadSaved = async () => {
+      const userId = await AsyncStorage.getItem('userId');
+      if (!userId) return;
 
-  if (!userId) return;
-  try {
-    const res = await axios.get(`${apiConfig.apiUrl}/savedjob/get/${userId}`);
-    const ids = res.data.savedJobs.map((job: any) => job.jobId);
-    setSavedJobs(ids);
-  } catch (error) {
-    console.error('Error loading saved jobs:', error); // 🔍 Shows 404
-  }
-};
-  loadSaved();
-}, []);
+      try {
+        const res = await axios.get(`${apiConfig.apiUrl}/savedjob/get/${userId}`);
+        const ids = res.data.savedJobs.map((job: any) => job.jobId);
+        setSavedJobs(ids);
+      } catch (error) {
+        console.error('Error loading saved jobs:', error);
+      }
+    };
+    loadSaved();
+  }, []);
 
+  const renderItem = ({ item }: { item: Job }) => {
+    const isSaved = !!item.id && savedJobs.includes(item.id);
 
- const renderItem = ({ item }: { item: Job }) => {
-  const isSaved = !!item.id && savedJobs.includes(item.id); // ✅ FIXED HERE
+    return (
+      <View style={styles.jobCard}>
+        <Text style={styles.jobTitle}>{item.degName}</Text>
+        <Text style={styles.jobCompany}>{item.organization.organizationName}</Text>
+        <Text style={styles.jobDetails}>
+          {item.organization.address} • {item.type || 'Type N/A'}
+        </Text>
 
-  return (
-    <View style={styles.jobCard}>
-      <Text style={styles.jobTitle}>{item.degName}</Text>
-      <Text style={styles.jobCompany}>{item.organization.organizationName}</Text>
-      <Text style={styles.jobDetails}>
-        {item.organization.address} • {item.type || 'Type N/A'}
-      </Text>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.applyButton} onPress={() => handleApply(item)}>
+            <Text style={styles.buttonText}>Apply</Text>
+          </TouchableOpacity>
 
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.applyButton} onPress={() => handleApply(item)}>
-          <Text style={styles.buttonText}>Apply</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            isSaved ? styles.saveButtonActive : null, // ✅ FIXED HERE (prevent falsey values like 0)
-          ]}
-          onPress={() => toggleSave(item.id)}
-        >
-          <Text style={styles.buttonText}>{isSaved ? 'Saved' : 'Save'}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.saveButton, isSaved ? styles.saveButtonActive : null]}
+            onPress={() => toggleSave(item.id)}
+          >
+            <Text style={styles.buttonText}>{isSaved ? 'Saved' : 'Save'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  };
 
   const handleLoadMore = () => {
     setIsLoadingMore(true);
@@ -209,30 +202,29 @@ useEffect(() => {
         <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Location</Text>
           <Picker
-  selectedValue={locationFilter}
-  onValueChange={(value) => setLocationFilter(value)}
-  style={styles.picker}
->
-   <Picker.Item label="Select Location" value="" enabled={false} />
-  {uniqueLocations.map(loc => (
-    <Picker.Item key={loc} label={loc} value={loc} />
-  ))}
-</Picker>
+            selectedValue={locationFilter}
+            onValueChange={value => setLocationFilter(value)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select Location" value="" enabled={false} />
+            {uniqueLocations.map(loc => (
+              <Picker.Item key={loc} label={loc} value={loc} />
+            ))}
+          </Picker>
         </View>
 
         <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Type</Text>
-         <Picker
-  selectedValue={typeFilter}
-  onValueChange={(value) => setTypeFilter(value)}
-  style={styles.picker}
->
-  <Picker.Item label="Select Type" value="" enabled={false} />
-  {uniqueTypes.map(type => (
-    <Picker.Item key={type} label={type} value={type} />
-  ))}
-</Picker>
-
+          <Picker
+            selectedValue={typeFilter}
+            onValueChange={value => setTypeFilter(value)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select Type" value="" enabled={false} />
+            {uniqueTypes.map(type => (
+              <Picker.Item key={type} label={type} value={type} />
+            ))}
+          </Picker>
         </View>
       </View>
 
@@ -295,14 +287,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   picker: {
-  height: 50, 
-  backgroundColor: '#fff',
-  borderRadius: 8,
-  paddingHorizontal: 10,
-  color: '#333',
-  fontSize: 16,  
-},
-
+    height: 50,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    color: '#333',
+    fontSize: 16,
+  },
   filterLabel: {
     marginBottom: 4,
     fontWeight: '600',
