@@ -44,10 +44,10 @@ export default function LoginScreen({ navigation }: any) {
 
         await AsyncStorage.setItem('userToken', accessToken);
         if (data.type?.toLowerCase() === 'org') {
-          await AsyncStorage.setItem('userId', data.compId);
-        } else if (data.type?.toLowerCase() === 'user') {
-          await AsyncStorage.setItem('userId', data.userId);
-        }
+  await AsyncStorage.setItem('orgId', data.compId);  // <-- change key from 'userId' to 'orgId'
+} else if (data.type?.toLowerCase() === 'user') {
+  await AsyncStorage.setItem('userId', data.userId);
+}
         await AsyncStorage.setItem('type', data.type);
 
         Alert.alert('Login Successful', 'You have successfully logged in!', [
