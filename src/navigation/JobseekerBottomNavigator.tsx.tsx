@@ -8,7 +8,8 @@ import SavedJobsScreen from '../screens/JobSeeker/Dashboard/SavedJobsScreen';
 // import SavedJobsScreen from '../screens/Jobseeker/SavedJobsScreen';
 import SearchScreen from '../screens/JobSeeker/Dashboard/SearchScreen';
 import ProfileScreen from '../screens/JobSeeker/Dashboard/ProfileScreen';
-import MessagesScreen from '../screens/JobSeeker/Dashboard/MessagesScreen';
+import MessagesScreen from '../screens/JobSeeker/Dashboard/AppliedJobScreen';
+import AppliedJobsScreen from '../screens/JobSeeker/Dashboard/AppliedJobScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -38,14 +39,14 @@ const JobseekerBottomNavigator = () => {
             case 'Search':
               iconSource = require('../assets/icons/search2.png');
               break;
-            case 'Messages':
-              iconSource = require('../assets/icons/message.png');
+            case 'Apply':
+              iconSource = require('../assets/icons/apply.png');
               break;
             case 'Profile':
               iconSource = require('../assets/icons/user.png');
               break;
             default:
-              iconSource = require('../assets/icons/home.png');
+              iconSource = require('../assets/icons/application.png');
           }
 
           return (
@@ -61,7 +62,7 @@ const JobseekerBottomNavigator = () => {
       <Tab.Screen name="Dashboard" component={UserDashboardScreen} />
       <Tab.Screen name="SavedJobs" component={SavedJobsScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
-      <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen name="Applied Job" component={AppliedJobsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );

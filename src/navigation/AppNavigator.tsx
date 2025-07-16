@@ -25,9 +25,9 @@ import InterviewScheduleScreen from '../screens/Organization/Dashboard/Interview
 import CompanyStatsScreen from '../screens/Organization/Dashboard/CompanyStatsScreen';
 import FeedbackScreen from '../screens/Organization/Dashboard/FeedbackScreen';
 import CampusDriveDetails from '../screens/Organization/Campus/CampusDriveDetails';
-
-// ✅ New screen added
 import EditProfileScreen from '../screens/JobSeeker/EditProfileScreen';
+import JobDetailsScreen from '../screens/JobSeeker/JobDetailsScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -60,9 +60,9 @@ const AppNavigator = () => {
         <Stack.Screen name="CompanyStats" component={CompanyStatsScreen} />
         <Stack.Screen name="Feedback" component={FeedbackScreen} />
         <Stack.Screen name="CampusDriveDetails" component={CampusDriveDetails} />
-
-        {/* ✅ Jobseeker Edit Profile screen */}
         <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Edit Profile' }} />
+<Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+    
       </Stack.Navigator>
     </NavigationContainer>
   );
