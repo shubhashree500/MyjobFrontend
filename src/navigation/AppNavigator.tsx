@@ -12,7 +12,6 @@ import OrganizationRegn from '../screens/Auth/OrganizationRegn';
 import OrgBottomNavigator from './OrgBottomNavigator';
 import JobseekerBottomNavigator from './JobseekerBottomNavigator.tsx';
 import OrgDrawerNavigator from './OrgDrawerNavigator';
-// import UserDashboardScreen from '../screens/JobSeeker/Dashboard/UserDashboardScreen.tsx';
 import PostInternshipScreen from '../screens/Organization/Post/PostInternshipScreen';
 import PostCampusScreen from '../screens/Organization/Post/PostCampusScreen';
 import PostJobScreen from '../screens/Organization/Post/PostJobScreen';
@@ -27,7 +26,7 @@ import FeedbackScreen from '../screens/Organization/Dashboard/FeedbackScreen';
 import CampusDriveDetails from '../screens/Organization/Campus/CampusDriveDetails';
 import EditProfileScreen from '../screens/JobSeeker/EditProfileScreen';
 import JobDetailsScreen from '../screens/JobSeeker/JobDetailsScreen';
-
+import ForgotPassword from '../screens/Common/ForgotPassword.tsx';
 
 const Stack = createStackNavigator();
 
@@ -44,10 +43,6 @@ const AppNavigator = () => {
         <Stack.Screen name="OrganizationDashboard" component={OrgBottomNavigator} />
         <Stack.Screen name="JobseekerDashboard" component={JobseekerBottomNavigator} />
         <Stack.Screen name="OrganizationDrawer" component={OrgDrawerNavigator} />
-
-        {/* Optional old screen */}
-        {/* <Stack.Screen name="UserDashboard" component={UserDashboardScreen} /> */}
-
         <Stack.Screen name="PostJob" component={PostJobScreen} options={{ title: 'Post a Job' }} />
         <Stack.Screen name="PostCampus" component={PostCampusScreen} options={{ title: 'Post a Campus Drive' }} />
         <Stack.Screen name="PostInternship" component={PostInternshipScreen} options={{ title: 'Post an Internship' }} />
@@ -61,8 +56,8 @@ const AppNavigator = () => {
         <Stack.Screen name="Feedback" component={FeedbackScreen} />
         <Stack.Screen name="CampusDriveDetails" component={CampusDriveDetails} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Edit Profile' }} />
-<Stack.Screen name="JobDetails" component={JobDetailsScreen} />
-    
+        <Stack.Screen name="JobDetails" component={JobDetailsScreen} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
       </Stack.Navigator>
     </NavigationContainer>
   );
