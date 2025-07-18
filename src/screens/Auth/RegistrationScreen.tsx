@@ -1,60 +1,86 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
-    View,
+ View,
     Text,
     StyleSheet,
     ImageBackground,
     Pressable,
     Image,
+    Animated,
 } from 'react-native';
 
-const Register = ({navigation}:any) => {
+const Register = ({ navigation }: any) => {
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoTranslate = useRef(new Animated.Value(30)).current;
 
-    return (
-        <View style={styles.container}>
-            {/* Background Image Section */}
-            <ImageBackground
-                source={require('../../assets/icons/AFLBG.png')} // Replace with your background image file
-                style={styles.backgroundImage}
-                resizeMode="cover"
-            >
-                {/* Logo Image */}
-                <Image
-                    source={require('../../assets/icons/Logo3.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                />
-            </ImageBackground>
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoTranslate, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
-            {/* Register Now Section */}
-            <View style={styles.registerSection}>
-                <Text style={styles.sectionTitle}>Register Now To</Text>
-                <Text style={styles.sectionTitle}>Continue .</Text>
-            </View>
+  return (
+    <View style={styles.container}>
+      {/* Background Image Section */}
+      <ImageBackground
+        source={require('../../assets/icons/AFLBG.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        {/* Animated Logo Image */}
+        <Animated.Image
+          source={require('../../assets/icons/Logo3.png')}
+          style={[
+            styles.logo,
+            {
+              opacity: logoOpacity,
+              transform: [{ translateY: logoTranslate }],
+            },
+          ]}
+          resizeMode="contain"
+        />
+      </ImageBackground>
 
-            <Text style={styles.sectionDescription}>
-                    Specify The User Type To Proceed
-            </Text>
-            {/* Buttons Section */}
-            <View style={styles.buttonsContainer}>
-                <Pressable
-                    style={styles.buttonLeft}
-                    onPress={() => navigation.navigate('UserRegn')}
-                >
-                    <Image source={require('../../assets/icons/case.png')} style={{height:20,width:20}} />
-                    <Text style={styles.buttonText}>Job Seeker</Text>
-                </Pressable>
-                <Pressable
-                    style={styles.buttonRight}
-                    onPress={() => navigation.navigate('OrganizationRegn')}
-                >
-                    <Image source={require('../../assets/icons/team.png')} style={{height:20,width:20}} />
-                    <Text style={styles.buttonText}>Organization</Text>
-                </Pressable>
-            </View>
-        </View>
-    );
+      {/* Register Now Section */}
+      <View style={styles.registerSection}>
+        <Text style={styles.sectionTitle}>Register Now To</Text>
+        <Text style={styles.sectionTitle}>Continue .</Text>
+      </View>
+
+      <Text style={styles.sectionDescription}>
+        Specify The User Type To Proceed
+      </Text>
+
+      {/* Buttons Section */}
+      <View style={styles.buttonsContainer}>
+        <Pressable
+          style={styles.buttonLeft}
+          onPress={() => navigation.navigate('UserRegn')}
+        >
+          <Image source={require('../../assets/icons/case.png')} style={{ height: 20, width: 20, marginRight: 8 }} />
+          <Text style={styles.buttonText}>Job Seeker</Text>
+        </Pressable>
+        <Pressable
+          style={styles.buttonRight}
+          onPress={() => navigation.navigate('OrganizationRegn')}
+        >
+          <Image source={require('../../assets/icons/team.png')} style={{ height: 20, width: 20, marginRight: 8 }} />
+          <Text style={styles.buttonText}>Organization</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -69,9 +95,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logo: {
-        height: 130,
+        height: 180,
         position: 'absolute',
-        top: '24%',
+        top: '22%',
     },
     registerSection: {
         flex:0.2,

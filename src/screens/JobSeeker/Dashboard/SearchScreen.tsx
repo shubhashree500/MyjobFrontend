@@ -173,13 +173,15 @@ const handleApply = async (job: Job) => {
       if (!userId) return;
 
       try {
-        const res = await axios.get(`${apiConfig.apiUrl}/savedjob/user/${userId}`);
-        if (Array.isArray(res.data)) {
-          const ids = res.data.map((item: any) => item.jobId);
-          setSavedJobs(ids);
-        } else {
-          console.warn('❗ Unexpected saved jobs response:', res.data);
-        }
+     const res = await axios.get(`${apiConfig.apiUrl}/savedjob/user/${userId}`);
+const savedJobsData = res.data.savedJobs;
+
+if (Array.isArray(savedJobsData)) {
+  const ids = savedJobsData.map((item: any) => item.jobId);
+  setSavedJobs(ids);
+} else {
+  console.warn('❗ Unexpected savedJobs shape:', res.data);
+}
       } catch (error) {
         console.error('Error loading saved jobs:', error);
       }
