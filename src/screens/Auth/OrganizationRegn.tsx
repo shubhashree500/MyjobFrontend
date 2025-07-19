@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Root, Popup } from 'popup-ui';
 import axios from 'axios';
 import config from '../../context/config';
 
@@ -60,7 +59,7 @@ const OrganizationRegn = ({ navigation }: any) => {
 
   const submitData = async () => {
     if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match');
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
@@ -91,39 +90,30 @@ const OrganizationRegn = ({ navigation }: any) => {
       });
 
       if (response.status === 201) {
-        Popup.show({
-          type: 'Success',
-          title: 'Registration Successful',
-          textBody: 'Your organization details have been submitted successfully!',
-          button: true,
-          buttonText: 'Ok',
-          callback: () => {
-            Popup.hide();
-            navigation.navigate('Login');
-          },
-        });
+        Alert.alert(
+          'Registration Successful',
+          'Your organization details have been submitted successfully!',
+          [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+        );
       }
     } catch (error: any) {
       console.error('Submission Error:', error.response?.data || error.message);
-      Popup.show({
-        type: 'Danger',
-        title: 'Error',
-        textBody: 'An error occurred while submitting your details. Please try again.',
-        button: true,
-        buttonText: 'Retry',
-        callback: () => Popup.hide(),
-      });
+      Alert.alert(
+        'Error',
+        'An error occurred while submitting your details. Please try again.',
+        [{ text: 'Retry' }]
+      );
     }
   };
 
   const handleNext = () => {
     if (step === 1 && password !== confirmPassword) {
-      Alert.alert('Password and Confirm Password do not match');
+      Alert.alert('Error', 'Password and Confirm Password do not match');
       return;
     }
 
     if (step === 3 && !termsAccepted) {
-      Alert.alert("Please accept the terms and conditions to proceed.");
+      Alert.alert("Error", "Please accept the terms and conditions to proceed.");
       return;
     }
 
@@ -131,6 +121,12 @@ const OrganizationRegn = ({ navigation }: any) => {
       setStep(step + 1);
     } else {
       submitData();
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
     }
   };
 
@@ -236,21 +232,24 @@ const OrganizationRegn = ({ navigation }: any) => {
   };
 
   return (
-    <Root>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.container}>
-          <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: `${(step / 3) * 100}%` }]} />
-          </View>
-          <Text style={styles.stepText}>STEP {step}/3</Text>
-          <Text style={styles.title}>Tell us Your Organization Details</Text>
-          {renderInputs()}
-          <Pressable style={styles.button} onPress={handleNext}>
-            <Text style={styles.buttonText}>{step === 3 ? 'Submit' : 'Next'}</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.progressContainer}>
+          <View style={[styles.progressBar, { width: `${(step / 3) * 100}%` }]} />
+        </View>
+        <Text style={styles.stepText}>STEP {step}/3</Text>
+        <Text style={styles.title}>Tell us Your Organization Details</Text>
+        {renderInputs()}
+        {step > 1 && (
+          <Pressable style={[styles.button, { backgroundColor: '#6c757d', marginTop: 8 }]} onPress={handleBack}>
+            <Text style={styles.buttonText}>Back</Text>
           </Pressable>
-        </ScrollView>
-      </TouchableWithoutFeedback>
-    </Root>
+        )}
+        <Pressable style={styles.button} onPress={handleNext}>
+          <Text style={styles.buttonText}>{step === 3 ? 'Submit' : 'Next'}</Text>
+        </Pressable>
+      </ScrollView>
+    </TouchableWithoutFeedback>
   );
 };
 
