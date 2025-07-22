@@ -7,13 +7,14 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosResponse } from 'axios';
 import apiConfig from '../../../context/config';
 
 type Job = {
   id?: number;
   degName: string;
-  skills?: string; // ✅ changed from string[] to string
+  skills?: string | string[];
   organization: {
     organizationName: string;
     logo: string;
@@ -27,17 +28,30 @@ const ActiveJobsScreen = () => {
 
   const fetchJobs = async () => {
     try {
-      const response: AxiosResponse<{ data: Job[] }> = await axios.get(
-        `${apiConfig.apiUrl}/postedjob/getAll`
-      );
-      console.log('Fetched jobs:', response.data.data);
-      setJobs(response.data.data);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error fetching jobs:', error.message);
-      } else {
-        console.error('Unknown error:', error);
+      const compId = await AsyncStorage.getItem('compId');
+
+      if (!compId) {
+        console.warn('Company ID not found in AsyncStorage.');
+        setLoading(false);
+        return;
       }
+
+      const response: AxiosResponse<{ data: Job[] }> = await axios.get(
+        `${apiConfig.apiUrl}/postedjob/organization/${compId}/jobs`
+      );
+
+      const parsedJobs = response.data.data.map((job) => ({
+        ...job,
+        skills: Array.isArray(job.skills)
+          ? job.skills
+          : typeof job.skills === 'string'
+          ? JSON.parse(job.skills)
+          : [],
+      }));
+
+      setJobs(parsedJobs);
+    } catch (error: any) {
+      console.error('Error fetching jobs by company:', error.message);
     } finally {
       setLoading(false);
     }
@@ -48,6 +62,12 @@ const ActiveJobsScreen = () => {
   }, []);
 
   const renderJobItem = ({ item }: { item: Job }) => {
+    const displaySkills = Array.isArray(item.skills)
+      ? item.skills.join(', ')
+      : typeof item.skills === 'string'
+      ? item.skills
+      : 'N/A';
+
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -67,7 +87,7 @@ const ActiveJobsScreen = () => {
           </View>
         </View>
         <Text style={styles.skillsLabel}>Skills:</Text>
-        <Text style={styles.skillsText}>{item.skills || 'N/A'}</Text>
+        <Text style={styles.skillsText}>{displaySkills || 'N/A'}</Text>
       </View>
     );
   };

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import apiConfig from '../../../context/config';
 
@@ -26,12 +27,23 @@ const ManageJobsScreen = () => {
   const fetchJobs = async () => {
     console.log('🔄 Fetching jobs...');
     try {
-      const response = await axios.get(`${apiConfig.apiUrl}/postedjob/getAll`);
+      const compId = await AsyncStorage.getItem('compId');
+
+      if (!compId) {
+        console.warn('⚠️ Company ID not found in AsyncStorage.');
+        setJobs([]);
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(
+        `${apiConfig.apiUrl}/postedjob/organization/${compId}/jobs`
+      );
+
       const data: Job[] = response.data.data;
       console.log('✅ Fetched jobs:', data);
       setJobs(data);
     } catch (error: any) {
-      // If there are simply no jobs, the backend returns 404 → treat as empty list
       if (error.response?.status === 404) {
         console.log('⚠️ No jobs found—showing empty list');
         setJobs([]);
@@ -118,6 +130,7 @@ const ManageJobsScreen = () => {
 
 export default ManageJobsScreen;
 
+// [Styles remain unchanged]
 const styles = StyleSheet.create({
   container: {
     flex: 1,

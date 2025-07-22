@@ -15,6 +15,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
 import config from '../../context/config';
+import { Linking } from 'react-native';
 
 const OrganizationRegn = ({ navigation }: any) => {
   const [step, setStep] = useState<number>(1);
@@ -207,25 +208,35 @@ const OrganizationRegn = ({ navigation }: any) => {
             </View>
           </>
         );
-      case 3:
-        return (
-          <View style={{ marginTop: 16 }}>
-            {[
-              { label: "We agree to share only authentic and verified company data", state: tc1, set: setTc1 },
-              { label: "We comply with data privacy regulations", state: tc2, set: setTc2 },
-              { label: "We will not misuse platform resources", state: tc3, set: setTc3 }
-            ].map(({ label, state, set }, index) => (
-              <Pressable key={index} style={styles.checkboxContainer} onPress={() => set(!state)}>
-                <View style={[styles.checkbox, state && styles.checkedBox]} />
-                <Text style={styles.checkboxLabel}>{label}</Text>
-              </Pressable>
-            ))}
-            <Pressable style={styles.checkboxContainer} onPress={() => setTermsAccepted(!termsAccepted)}>
-              <View style={[styles.checkbox, termsAccepted && styles.checkedBox]} />
-              <Text style={[styles.checkboxLabel, { fontWeight: 'bold' }]}>I accept the terms and conditions</Text>
-            </Pressable>
-          </View>
-        );
+     case 3:
+  return (
+    <View style={{ marginTop: 16 }}>
+      <Pressable onPress={() => Linking.openURL(`${config.apiUrl.replace('/api/v1', '')}/public/docs/terms-and-conditions.pdf`)}>
+        <Text style={{ color: '#007BFF', textAlign: 'center', marginBottom: 12, textDecorationLine: 'underline' }}>
+          📄 View Terms & Conditions
+        </Text>
+      </Pressable>
+
+      {[
+        { label: "We agree to share only authentic and verified company data", state: tc1, set: setTc1 },
+        { label: "We comply with data privacy regulations", state: tc2, set: setTc2 },
+        { label: "We will not misuse platform resources", state: tc3, set: setTc3 }
+      ].map(({ label, state, set }, index) => (
+        <Pressable key={index} style={styles.checkboxContainer} onPress={() => set(!state)}>
+          <View style={[styles.checkbox, state && styles.checkedBox]} />
+          <Text style={styles.checkboxLabel}>{label}</Text>
+        </Pressable>
+      ))}
+
+      <Pressable style={styles.checkboxContainer} onPress={() => setTermsAccepted(!termsAccepted)}>
+        <View style={[styles.checkbox, termsAccepted && styles.checkedBox]} />
+        <Text style={[styles.checkboxLabel, { fontWeight: 'bold' }]}>
+          I accept the terms and conditions
+        </Text>
+      </Pressable>
+    </View>
+  );
+
       default:
         return null;
     }

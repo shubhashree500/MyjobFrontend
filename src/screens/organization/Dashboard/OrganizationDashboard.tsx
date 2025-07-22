@@ -10,6 +10,8 @@ import {
   SafeAreaView,
 } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import apiConfig from '../../../context/config';
 
@@ -17,29 +19,40 @@ const OrganizationHomeScreen = () => {
   const navigation = useNavigation<any>(); 
  const [jobCount, setJobCount] = useState<number>(0);
   const [loadingJobs, setLoadingJobs] = useState<boolean>(true);
- 
- useEffect(() => {
-  const fetchJobCount = async () => {
-    console.log('🔄 Fetching job count...');
-    try {
-      const res = await axios.get(`${apiConfig.apiUrl}/postedjob/getAll`);
-      console.log('✅ Response received:', res.data);
+useEffect(() => {
+    const fetchJobCount = async () => {
+      console.log('🔄 Fetching job count...');
+      try {
+        const compId = await AsyncStorage.getItem('compId');
 
-      if (Array.isArray(res.data?.data)) {
-        setJobCount(res.data.data.length);
-        console.log('📊 Job count:', res.data.data.length);
-      } else {
-        console.warn('⚠️ Unexpected response format:', res.data);
-        setJobCount(0);
+        if (!compId) {
+          console.warn('⚠️ Company ID not found in AsyncStorage.');
+          setJobCount(0);
+          setLoadingJobs(false);
+          return;
+        }
+
+        const res = await axios.get(
+          `${apiConfig.apiUrl}/postedjob/organization/${compId}/jobs`
+        );
+
+        console.log('✅ Response received:', res.data);
+
+        if (Array.isArray(res.data?.data)) {
+          setJobCount(res.data.data.length);
+          console.log('📊 Job count:', res.data.data.length);
+        } else {
+          console.warn('⚠️ Unexpected response format:', res.data);
+          setJobCount(0);
+        }
+      } catch (error: any) {
+        console.error('❌ Failed to fetch job count:', error?.message || error);
+        setJobCount(0); // fallback to zero
+        Alert.alert('Error', 'Failed to fetch job count.');
+      } finally {
+        setLoadingJobs(false);
       }
-    } catch (error: any) {
-      console.error('❌ Failed to fetch job count:', error?.message || error);
-      setJobCount(0); // fallback to zero
-    } finally {
-      setLoadingJobs(false);
-    }
-  };
-
+    };
   fetchJobCount();
 }, []);
 
